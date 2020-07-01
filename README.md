@@ -1,6 +1,7 @@
 # Problema del CVRP
 
 Por mejorar:
+
 B-n39-k5 (se estancó durante casi 5000 iteraciones al medio) -> Desvio: 10.9% en 2min
 
 B-n41-k6 (se estancó durante casi 6000 iteraciones al final) -> Desvio: 23.8% en 3min
