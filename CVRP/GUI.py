@@ -163,7 +163,7 @@ class Ventana(tk.Tk):
         
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
         self.__label_RecomiendacTiempo[i].place(relx=0.4, rely=0.35)
-        self.__eTime[i].set(25.0)
+        self.__eTime[i].set(1.0)
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
         return 
 
@@ -229,7 +229,7 @@ class Ventana(tk.Tk):
         parametros = re.findall(r"[0-9]+",lineaCapacidad)
 
         self.__capacidad.append(float(parametros[0]))
-        print("Capacidad: "+str(self.__capacidad))
+        print("Capacidad: "+str(self.__capacidad[-1]))
 
         #Lista donde irán las coordenadas (vertice, x, y)
         coordenadas = []
