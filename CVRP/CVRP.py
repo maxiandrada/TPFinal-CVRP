@@ -237,8 +237,6 @@ class CVRP:
                 Aristas = Aristas_Opt
                 iteracEstancamiento = 1
                 iteracEstancamiento_Opt = 1
-                porc_Estancamiento = 1.05
-                porc_EstancamientoMax = 1.2
             #Si se estancó, tomamos a beta igual a 2
             elif(iteracEstancamiento > 200 and self.__beta < 2):
                 tiempoTotal = time()-tiempoEstancamiento

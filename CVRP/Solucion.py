@@ -61,20 +61,20 @@ class Solucion(Grafo):
     def rutasIniciales(self, strSolInicial, nroVehiculos, demandas, capacidad):
         rutas = []
         sol_factible = False
-        while(not sol_factible):
-            rutas = []
-            if(strSolInicial==0):
-                secuenciaInd = random.sample(range(1,len(self.getV())) , len(self.getV())-1)
-                sol_factible = self.cargar_secuencia(secuenciaInd, nroVehiculos, demandas, capacidad, rutas)
-                print("secuencia de indices de los vectores (random): "+str(secuenciaInd))
-            elif(strSolInicial==1):
-                sol_factible = self.solInicial_VecinoCercano(nroVehiculos, capacidad, demandas, rutas)
-                strSolInicial = 0
-            else:
-                secuenciaInd = list(range(1,len(self._matrizDistancias)))
-                print("secuencia de indices de los vectores (secuencial): "+str(secuenciaInd))
-                sol_factible = self.cargar_secuencia(secuenciaInd, nroVehiculos, demandas, capacidad, rutas)
-                strSolInicial = 0
+        #while(not sol_factible):
+        #    rutas = []
+        #    if(strSolInicial==0):
+        #        secuenciaInd = random.sample(range(1,len(self.getV())) , len(self.getV())-1)
+        #        sol_factible = self.cargar_secuencia(secuenciaInd, nroVehiculos, demandas, capacidad, rutas)
+        #        print("secuencia de indices de los vectores (random): "+str(secuenciaInd))
+        #    elif(strSolInicial==1):
+        sol_factible = self.solInicial_VecinoCercano(nroVehiculos, capacidad, demandas, rutas)
+                #strSolInicial = 0
+        # else:
+        #     secuenciaInd = list(range(1,len(self._matrizDistancias)))
+        #     print("secuencia de indices de los vectores (secuencial): "+str(secuenciaInd))
+        #     sol_factible = self.cargar_secuencia(secuenciaInd, nroVehiculos, demandas, capacidad, rutas)
+        #     strSolInicial = 0
             
         return rutas
 
