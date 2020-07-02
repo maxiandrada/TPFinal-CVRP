@@ -1,0 +1,162 @@
+An impressive number of heuristics have been proposed for the VRP. Initially these were
+mainly standard route construction algorithms, whereas more recently powerful meta-
+heuristic approaches have been developed.
+
+Route construction methods were among the first heuristics for the CVRP and still form the
+core of many software implementations for various routing applications. These algorithms
+typically start from an empty solution and iteratively build routes by inserting one or
+more customers at each iteration, until all customers are routed.
+
+Route construction algorithms are fully specified by their three main ingredients, namely an initialization
+criterion, a selection criterion specifying which customers are chosen for insertion at the
+current iteration, and an insertion criterion to decide where to locate the chosen customers
+into the current routes.
+
+
+Hay que tener en cuenta los atributos de las soluciones
+
+Tabu Search Granular
+
+Granular tabu search is based on the use of drastically restricted neighborhoods,
+not containing the moves that involve only elements that are not likely to belong to good
+feasible solutions.
+
+These restricted neighborhoods are called granular, and may be seen as
+an efficient implementation of candidate-list strategies proposed for tabu-search algorithms.
+
+VECINDARIO DE UNA SOLUCIÓN:
+
+The neighborhood of a solution is
+the set of other solutions that can be obtained from
+it by means of simple modifications.
+
+
+ESTRUCTURA DE VECINDARIO:
+
+The modification that allows one to pass from one solution to a
+neighboring one is the neighborhood structure, and 
+the transition from one solution to another is called a move.
+
+CARDINALIDAD DE UN VECINDARIO:
+The cardinality of a neighborhood is the number
+of moves that are neighbors of a generic solution.
+
+OPTIMO LOCAL:
+
+At each iteration, the best solution of the neigh-
+borhood that improves the current one is selected as
+the new current solution and the process is iterated
+until no improving move exists, i.e., until the current
+solution is a local optimum with respect to the current
+neighborhood.
+
+PRÓPOSITO DE TABU SEARCH:
+Since the quality of the local optimum found can be
+very poor with respect to the optimal solution, tabu
+search, as well as other metaheuristics based on local
+search.
+
+MECANISMO PARA EVITAR CICLOS:
+To avoid the occurrence of loops resulting from
+the movement back to the local optimum at the next
+iteration, a short-term memory mechanism is coupled
+with this extended-search strategy.
+
+
+TABÚ LIST:
+
+The basic way of introducing such short-term memory is the so-called
+tabu list, which stores some attributes identifying the
+moves that produced the solutions most recently visited.
+
+CRITERIOS DE PARADA:
+Normally, tabu search is stopped after a given
+number of overall or non-improving iterations.
+
+MÉTODO:
+
+The GTS algorithm is initialized with the heuristic
+solution obtained by the well-known savings heuris-
+tic by Clarke and Wright (1964).
+
+The method is based on use of drastically restricted
+neighborhoods, called granular neighborhoods, obtained
+from standard ones by removing moves that involve
+only elements that are not likely to belong to high-
+quality feasible solutions.
+
+Start-ing from the original complete graph G = (V,A), we
+define a new sparse graph G' = (V,A'), with |A|<n²
+n 2 . This sparse graph includes all the arcs that should
+be considered for inclusion in the current solution
+
+In our implementation we adopted a very simple
+filtering rule to define “short” arcs. An arc is short,
+hence it belongs to the sparse graph G', if its cost is
+not greater than the granularity threshold value
+
+/*AQUÍ VA EL UMBRAL DE GRANULARIDAD*/
+
+where beta is a suitable positive sparsification parameter
+
+
+SOLUCIÓN INICIAL CLARK Y WRIGHT
+
+Formulación. 
+Dado un número de camiones x_{i} de capacidad C_{i} (i=1...n) están disponibles y cargas q_{i}, se requiere que estas sean llevadas a los puntos P{j} (j=1...M) desde un depósito P_{0}.
+Dada las distancias d_{y,z} entre todo los puntos es necesario minimizar la distancia total cubierta por los camiones.
+
+Por covenciencia de computación C_{i} está ordenada C_{i-1}<C_{i}
+(i=2,..,n) y está asumido que
+
+C_{1} < sum{j=1, j=m} q_{j}
+
+Dado que en una solución algunos camiones pueden solo estar parcialmente cargados, x_{1} necesita se lo suficientemente grande para asegurar que todas las cargas seran asignadas. Por propósitos de computación esta por lo tanto es infinita.
+Hay que notar que si 
+C_{n} >= sum{j=1, j=m} q_{j} el problema se tranforma en TSP
+
+Consideremos una asignación factible de camiones a las ccargas. En todos los puntos donde estén los clientes serán vinculados con otros dos puntos, uno o ambos de los cuales pueden ser el depósito P_{0}. Ahora si se considera los puntos P_{y} y P_{z}. Sea los puntos vinculados a P_{y} sea P_{y+1} y similarmente para P_{z}. El efecto de vincular P_{y} y P_{z} será calculado. Asumiendo que P_{z} y P_{z} y están en recorridos separados desde P_{0}.
+Si ellos están en el mismo recorrido, la misma consideración aplica, excepto que una de cuatro casos no está permitido.
+
+FIGURA 1 a 5
+
+La figura 1 muestra las posiciones de P_{y} y P_{z} en una asignación factible. Las figuras 2,3,4 y 5 muestras las posiciones de P_{y} y P_{z} y las cuatro posibles descomposiciones de estos recorridos causados por juntar P_{y} con P_{z}. Estos consisten en cortar los enlaces o arcos entre P_{y} y P_{y+1} o P_{y} y P_{y-1} con el corte de los arcos P_{z} y P_{z+1} o P_{z} y P_{z-1}
+La distancia "ahorro" por cada una de estas descoposiciones es la siguiente: 
+
+(2) d_{y,y+1} - d_{0, y+1} + d_{z,z+1} - d_{0,z+1} - d_{y,z}
+(3) d_{y-1,y} - d_{0, y-1} + d_{z,z+1} - d_{0,z+1} - d_{y,z}
+(4) d_{y,y+1} - d_{0, y+1} + d_{z,z-1} - d_{0,z-1} - d_{y,z}
+(5) d_{y,y-1} - d_{0, y+1} + d_{z,z-1} - d_{0,z-1} - d_{y,z}
+
+Estas 4 "ahorros" son calculadas por cada de clientes. 
+Se selecciona el máximo de estos,si están vinculados, produce rutas factibles y consistentes con la disponibilidad y capacidad de los camiones. Estos dosclientes están ahora vinculados y los "ahorros" son recalculados. En términos de programación lineal es equivalente a asignar dos precios sombras a un cliente. Las cuatro evaluaciones para la "celda" (y:z) (no sé si será así jaja) estan numeradas arriba. Cuando un enlace es postado, el costo sombra apropiado es reducido por el valor de la celda causando una ruptura. Dado que el valor de la celda es el valor máximo, cuando un punto es vinculado con otros dos (ninguno de estos P_{0}) todos sus valores serán negativos y este punto no será considerado otra vez para vincularlo. 
+Como un resultado de esto, los únicos enlaces que serán cortados serán aquellos puntos vinculados a P_{0}, si estos estuvieran vinculados a la celda (y:z)el ahorro sería d_{0,y}+d_{0,z}-d_{y,z}
+
+TABLITA :D 
+Procedimiento computacional
+Se asume que los valores de q_{j} son tales con una inicial asignación de un vehículo a cada cliente posible. Si esto no es verdadero,asumimos que esta asignacion puede ser hecha dividiendo una carga en 2 o más "camionadas" de más alta capacidad disponibles y solo considerando el residuo de la carga. un monto menor que una "camionada" de alta capacidad.
+Por ejemplo: q_{j} = 1700 gallons y los camiones disponibles son de 700 galones, 2 de 600 galones y tres de 500 galones, entonces los camiones de 700 y 600 galones deberían ser asignados a un cliente y 400 galones usados como el valor de q_{j} con una disponiblidad ahora de 3 camiones de 500 galones. Por lo tanto q_{j}<C_{n} (j=1...M).
+Por la comunicación hecha a mano, es recomendado usar la mitad de la matriz.
+El ejemplo numérico usado aqui es el mismo usando en la referencia 1 en la tabla 1, las entradas de la esquina inferior izquierda of cada celda son los ahorros. Para la celda (y:z) on y,z>=1 y y!=z este valor es d_{0,y}+d_{0,z}-d_{y,z}. Un vector Q=(Q_{1}...Q_{M}) es agregado en el lado izquierdo de la matriz. Inicialmente esta consiste de cargas q_{j} requeridas por el cliente P_{j} (j=1...M). El entrada del medio de cada celda (y:z) es el t_{y,z}=1 si los dos clientes P_{y} y P_{z} están vinculados en una ruta, cualquier otro caso t_{y,z}=0 para y,z>0. Si un cliente es cortado para un ser servido exclusivamente por un camión t_{y,0}=2 la siguiente relación siempre existe. 
+
+sum_{z=0, y-1)} sum_{z=y+1,z=m} t_{y,z} = 2...(A)
+
+La tabla 2 es una tabla que muestra el número de camiones disponible, arriba la capacidad disponible y abajo el número de camiones ya asignados. En el ejemplo númerico mostrado, esto es asume que hay un número limitado 
+
+
+
+
+Clarke y Wright otra versión
+
+
+
+Todos los ahorros son ordenados en orden ascendente. Comenzando por el valor más alto de la lista (él primer elemento). Finalmente, CW incluye a los arcos, enlaces (i,j) en una ruta si las restricciones de la ruta no son violadas al incluir un cliente i y j en la ruta. 
+Las restricciones de rutas son las siguientes: 
+A) Ni i ni j han sido asignados a una ruta
+B) Exactamente, uno de dos clientes (i o j) han sido ya includo en una ruta existente y ese cliente no está en el interior de una ruta. (Un cliente está en el interior de una ruta si este es no adyacente al depósito 1). 
+C) Ambos clientes i y j han sido asignados en dos rutas existentes diferentes y ningún cliente está en el interior de su ruta. 
+El enlazamiento de la ruta es repetido para el siguiente elemento de la lista de ahorros hasta que no haya un enlace factible posible. En el caso de los clientes no ruteados, cada uno es asignado por una ruta que comienza desde el depósito 1, visita a los clientes no asignados y vuelve al depósito. 
+
+
+
+
