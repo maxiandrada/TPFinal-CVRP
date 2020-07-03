@@ -150,7 +150,7 @@ class Ventana(tk.Tk):
         tenureDROP = int(len(self.__matrizDistancias[i])**(1/2.0))+1
 
         self.__combo1[i].configure(state = "readonly")
-        self.__combo1[i].set('Vecino mas cercano')
+        self.__combo1[i].set('Clark & Wright')
         self.__comboOpt[i].configure(state = "readonly")
         self.__comboOpt[i].set('2-opt')
 
@@ -163,7 +163,7 @@ class Ventana(tk.Tk):
         
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
         self.__label_RecomiendacTiempo[i].place(relx=0.4, rely=0.35)
-        self.__eTime[i].set(4.0)
+        self.__eTime[i].set(5.0)
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
         return 
 

@@ -67,6 +67,7 @@ class Solucion(Grafo):
                 print("Clark & Wright")
                 R = self.clarkWright(nroVehiculos)
                 rutas = self.cargarRutas(R)
+                sol_factible = True
             elif(strSolInicial==1):
                 print("Sol Inicial por Vecino Cercano")
                 sol_factible = self.solInicial_VecinoCercano(nroVehiculos, capacidad, demandas, rutas)
@@ -289,6 +290,88 @@ class Solucion(Grafo):
         
         return rutas
 
+    def mezclarAristas(self, indDROP2opt, aristasDROP2opt, indDROP3opt, aristasDROP3opt, indDROP4opt, aristasDROP4opt):
+        cond = False
+        aristasDROP = []
+        indDROP = []
+        
+        if(aristasDROP2opt != []):
+            indDROP.extend(indDROP2opt)
+            aristasDROP.extend(aristasDROP2opt)
+        if(aristasDROP3opt != []):
+            indDROP.extend(indDROP3opt)
+            if(aristasDROP != []):
+                for a_Drop3 in aristasDROP3opt:
+                    repetido = False
+                    for a in aristasDROP:
+                        if(a_Drop3 == a):
+                            repetido = True
+                            break
+                    if(not repetido):
+                        aristasDROP.append(a_Drop3)
+        if(aristasDROP4opt != []):
+            indDROP.extend(indDROP4opt)
+            if(aristasDROP != []):
+                for a_Drop4 in aristasDROP4opt:
+                    repetido = False
+                    for a in aristasDROP:
+                        if(a_Drop3 == a):
+                            repetido = True
+                            break
+                    if(not repetido):
+                        aristasDROP.append(a_Drop3)
+        
+        return indDROP, aristasDROP
+
+    def swap(self, lista_permitidos, ind_permitidos, ind_random, rutas_orig, condOptim):
+        rutas2opt = rutas3opt = rutas4opt = []
+        aristasADD = []
+        aristasDROP = []
+        indDROP = []
+        aristasDROP2opt = aristasDROP3opt = aristasDROP4opt = []
+        costo2opt = costo3opt = costo4opt = 0
+
+        while(rutas2opt==[] and rutas3opt==[] and rutas4opt==[] and ind_random!=[]):
+            ind = ind_random[-1:]
+            ind_random = ind_random[:-1]
+            rutas2opt, aristasADD, aristasDROP2opt, costo2opt, indADD, indDROP2opt = self.swap_2opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
+            rutas3opt, aristasADD, aristasDROP3opt, costo3opt, indADD, indDROP3opt = self.swap_3opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
+            rutas4opt, aristasADD, aristasDROP4opt, costo4opt, indADD, indDROP4opt = self.swap_4opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
+        
+        indDROP, aristasDROP = self.mezclarAristas(indDROP2opt, aristasDROP2opt, indDROP3opt, aristasDROP3opt, indDROP4opt, aristasDROP4opt)
+        
+        costo = [costo2opt, costo3opt, costo4opt]
+        costo = [x for x in costo if x!=0]
+        if(costo!=[]):
+            costo = sorted(costo)
+            if(condOptim):
+                random.shuffle(costo)
+            costo = costo[0]
+        #print("costo: "+str(costo))
+        #Encontramos una sol factible
+        if(ind_random!=[]):
+            if(costo == costo2opt):
+                rutas = rutas2opt
+                aristasDROP = aristasDROP2opt
+                indDROP = indDROP2opt
+            elif(costo == costo3opt):
+                rutas = rutas3opt
+                aristasDROP = aristasDROP3opt
+                indDROP = indDROP3opt
+            else:
+                rutas = rutas4opt
+                aristasDROP = aristasDROP4opt
+                indDROP = indDROP4opt
+            
+            index = [i for i in range(0,len(ind_permitidos)) if ind_permitidos[i] in indDROP or ind_permitidos[i] in indADD]
+            ind_permitidos = np.delete(ind_permitidos, index)
+        else:
+            print("No se encontro una sol factible")
+            return rutas_orig, [], [], self.getCostoAsociado()
+
+        return rutas, aristasADD, aristasDROP, costo
+
+
     def getPosiciones(self, V_origen, V_destino, rutas):
         ind_verticeOrigen = -1
         ind_verticeDestino = -1
@@ -318,51 +401,6 @@ class Solucion(Grafo):
                 break
 
         return [ind_rutaOrigen, ind_rutaDestino],[ind_verticeOrigen, ind_verticeDestino]
-
-    def swap(self, lista_permitidos, ind_permitidos, ind_random, rutas_orig, condOptim):
-        rutas2opt = rutas3opt = rutas4opt = []
-        aristasADD = []
-        aristasDROP2opt = aristasDROP3opt = aristasDROP4opt = []
-        costo2opt = costo3opt = costo4opt = 0
-
-        while(rutas2opt==[] and rutas3opt==[] and rutas4opt==[] and ind_random!=[]):
-            ind = ind_random[-1:]
-            ind_random = ind_random[:-1]
-            rutas2opt, aristasADD, aristasDROP2opt, costo2opt, indADD, indDROP2opt = self.swap_2opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
-            rutas3opt, aristasADD, aristasDROP3opt, costo3opt, indADD, indDROP3opt = self.swap_3opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
-            rutas4opt, aristasADD, aristasDROP4opt, costo4opt, indADD, indDROP4opt = self.swap_4opt(lista_permitidos, ind_permitidos, ind, rutas_orig)
-
-        costo = [costo2opt, costo3opt, costo4opt]
-        costo = [x for x in costo if x!=0]
-        if(costo!=[]):
-            costo = sorted(costo)
-            if(condOptim):
-                random.shuffle(costo)
-            costo = costo[0]
-        #print("costo: "+str(costo))
-        #Encontramos una sol factible
-        if(ind_random!=[]):
-            if(costo == costo2opt):
-                rutas = rutas2opt
-                aristasDROP = aristasDROP2opt
-                index_DROP = indDROP2opt
-            elif(costo == costo3opt):
-                rutas = rutas3opt
-                aristasDROP = aristasDROP3opt
-                index_DROP = indDROP3opt
-            else:
-                rutas = rutas4opt
-                aristasDROP = aristasDROP4opt
-                index_DROP = indDROP4opt
-            
-            index = [i for i in range(0,len(ind_permitidos)) if ind_permitidos[i] in index_DROP or ind_permitidos[i] in indADD]
-            ind_permitidos = np.delete(ind_permitidos, index)
-        else:
-            print("No se encontro una sol factible")
-            return rutas_orig, [], [], self.getCostoAsociado()
-
-        return rutas, aristasADD, aristasDROP, costo
-
 
     #2-opt:
     #arista_azar = (3,7)

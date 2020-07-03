@@ -261,23 +261,23 @@ class CVRP:
                 iteracEstancamiento = 1
                 Aristas = Aristas_Opt
             #Si se estancó nuevamente, tomamos la proxima sol peor que difiera un 5% del optimo o la penultima de los optimos locales
-            # elif(iteracEstancamiento > 200 and len(self.__optimosLocales) >= indOptimosLocales*(-1)):
-            #     nuevas_rutas = self.__optimosLocales[indOptimosLocales]
-            #     nueva_solucion = self.cargaSolucion(nuevas_rutas)
-            #     costo = nueva_solucion.getCostoAsociado()
-            #     tiempoTotal = time()-tiempoEstancamiento
-            #     cad = "Se estancó durante %d min %d seg. Admitimos el penultimo optimo local " %(int(tiempoTotal/60), int(tiempoTotal%60))
-            #     print(cad + "-->    Costo: "+str(costo))
+            elif(iteracEstancamiento > 200 and len(self.__optimosLocales) >= indOptimosLocales*(-1)):
+                nuevas_rutas = self.__optimosLocales[indOptimosLocales]
+                nueva_solucion = self.cargaSolucion(nuevas_rutas)
+                costo = nueva_solucion.getCostoAsociado()
+                tiempoTotal = time()-tiempoEstancamiento
+                cad = "Se estancó durante %d min %d seg. Admitimos el penultimo optimo local " %(int(tiempoTotal/60), int(tiempoTotal%60))
+                print(cad + "-->    Costo: "+str(costo))
                 
-            #     lista_tabu = []
-            #     ind_permitidos = ind_AristasOpt
-            #     umbral = self.calculaUmbral(costo)
-            #     solucion_refer = nueva_solucion
-            #     rutas_refer = nuevas_rutas
-            #     cond_Optimiz = True
-            #     Aristas = Aristas_Opt
-            #     iteracEstancamiento = 1
-            #     indOptimosLocales -= 1
+                lista_tabu = []
+                ind_permitidos = ind_AristasOpt
+                umbral = self.calculaUmbral(costo)
+                solucion_refer = nueva_solucion
+                rutas_refer = nuevas_rutas
+                cond_Optimiz = True
+                Aristas = Aristas_Opt
+                iteracEstancamiento = 1
+                indOptimosLocales -= 1
             elif(iteracEstancamiento> 200 and costo_sol*porc_Estancamiento > nuevo_costo and nuevo_costo < costo_sol*porc_EstancamientoMax):
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 tiempoTotal = time()-tiempoEstancamiento
