@@ -10,7 +10,7 @@ class Grafo:
         self._V = []
         self._A = []
         self._costoAsociado = 0
-        self._grado = 0
+        self._grado = len(M)
         self._matrizDistancias = M
         self._demanda = D
         if(M!=[] and D!=[]):
@@ -30,7 +30,8 @@ class Grafo:
         self._V = V
         self._costoAsociado = costo
         return cap
-
+    def setDemanda(self, D):
+        self._demanda = D
     def setA(self, A):
         self._A = A
         V = []
@@ -144,7 +145,7 @@ class Grafo:
                 arista_aux = Arista(row,col,self._matrizDistancias[row][col])
                 A.append(arista_aux)
         
-        print("Aristas: \n",A)
+        #print("Aristas: \n",A)
         return A
 
     def aristaConOrigen(self, V):
@@ -172,6 +173,10 @@ class Grafo:
                 salida.append(arista)
         return salida
     
+    def addCliente(self, secuencia):
+        self._V = self.cargaVertices(secuencia)
+        self._A = self.cargaAristas()
+
     #Cargar las aristas
     def cargarDesdeMatriz(self, Matriz, Demanda):
         for fila in range(0, len(Matriz)):
