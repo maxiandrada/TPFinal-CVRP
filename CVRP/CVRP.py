@@ -336,7 +336,6 @@ class CVRP:
         self.__txt.escribir("Tiempo de estancamiento: "+str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg")
         self.__txt.imprimir()
 
-
     def getPermitidos(self, Aristas, lista_tabu, umbral, solucion):
         AristasNuevas = []
         ind_permitidos = np.array([], dtype = int)
@@ -351,7 +350,6 @@ class CVRP:
             if(not pertS and self.__umbralMin <= EP.getPeso() and EP.getPeso() <= umbral):
                 AristasNuevas.append(EP)
                 ind_permitidos = np.append(ind_permitidos, EP.getId())
-        
         ind_permitidos = np.unique(ind_permitidos)
 
         return ind_permitidos, AristasNuevas
@@ -367,4 +365,5 @@ class CVRP:
                 lista_tabu.pop(i)
                 i-=1
             i+=1
+    
     

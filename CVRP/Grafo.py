@@ -13,20 +13,30 @@ class Grafo:
         self._grado = len(M)
         self._matrizDistancias = M
         self._demanda = D
+        self._demandaAcumulada = []
         if(M!=[] and D!=[]):
             self.cargarDesdeMatriz(M, D)
         
     def getGrado(self):
         return self._grado
+
+    def getDemandaAcumulada(self):
+        return self._demandaAcumulada
+    
     def cargaDesdeAristas(self, A):
         self._A = A
         V = []
         cap = 0
         costo = 0
-        for v in A:
-            V.append(v.getOrigen())
-            costo += v.getPeso()
-            cap += self._demanda[v.getOrigen().getValue()-1]
+        demAcum = 0
+        self._demandaAcumulada = []
+        for a in A:
+            v = a.getOrigen()
+            V.append(v)
+            costo += a.getPeso()
+            cap += self._demanda[v.getValue()-1]
+            demAcum += v.getDemanda()
+            self._demandaAcumulada.append(demAcum)
         self._V = V
         self._costoAsociado = costo
         return cap
@@ -201,6 +211,8 @@ class Grafo:
         self._V = seq
         self._A = []
         costo = 0
+        demAcum = 0
+        self._demandaAcumulada = []
         cap = 0
         
         for i in range(0,len(seq)):
@@ -218,6 +230,8 @@ class Grafo:
                 new_edge = Arista(seq[i], seq[0], dist)
                 new_edge.setId(fila, col, len(self._matrizDistancias))
                 self.getA().append(new_edge)
+            demAcum += new_edge.getOrigen().getDemanda()
+            self._demandaAcumulada.append(demAcum)
             costo+=dist
             cap += seq[i].getDemanda()
         self._costoAsociado = costo

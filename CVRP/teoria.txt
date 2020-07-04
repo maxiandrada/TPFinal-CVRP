@@ -1,4 +1,4 @@
-El grafo dispero contiene a aquellas aristas cuya distancia no supere el umbral
+-El grafo dispero contiene a aquellas aristas cuya distancia no supere el umbral
 A partir de esas aristas elegimos una para hacer nuestro swap
 
 Umbral de granularidad: phi = Beta*(c/(n+k))
