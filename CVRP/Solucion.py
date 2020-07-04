@@ -347,7 +347,7 @@ class Solucion(Grafo):
             if(condOptim):
                 random.shuffle(costo)
             costo = costo[0]
-        #print("costo: "+str(costo))
+        
         #Encontramos una sol factible
         if(ind_random!=[]):
             if(costo == costo2opt):
@@ -402,6 +402,57 @@ class Solucion(Grafo):
 
         return [ind_rutaOrigen, ind_rutaDestino],[ind_verticeOrigen, ind_verticeDestino]
 
+    def evaluarOpt(self, lista_permitidos, ind_permitidos, ind_random, rutas):
+        kOpt = 0            #2, 3 o 4-opt
+        tipo_kOpt = 0       #Las variantes de cada opt's anteriores
+        costoSolucion = float("inf")
+        nuevoCosto = costoSolucion
+        
+        while(costoSolucion == float("inf") and ind_random!=[]):
+            ind = ind_random[-1]
+            ind_random = ind_random[:-1]
+            aristaIni = lista_permitidos[ind_permitidos[ind]]
+
+            V_origen = aristaIni.getOrigen()
+            V_destino = aristaIni.getDestino()
+            indRutas, indAristas = self.getPosiciones(V_origen, V_destino, rutas)
+            
+            nuevoCosto, tipo_2opt = self.evaluar_2opt(aristaIni, indRutas, indAristas, rutas)
+            if(nuevoCosto < costoSolucion):
+                costoSolucion = nuevoCosto
+                kOpt = 2
+                tipo_kOpt = tipo_2opt
+            nuevoCosto, tipo_3opt = self.evaluar_3opt(aristaIni, indRutas, indAristas, rutas)
+            if(nuevoCosto < costoSolucion):
+                costoSolucion = nuevoCosto
+                kOpt = 3
+                tipo_kOpt = tipo_3opt
+            nuevoCosto, tipo_4opt = self.evaluar_4opt(aristaIni, indRutas, indAristas, rutas)
+            if(nuevoCosto < costoSolucion):
+                costoSolucion = nuevoCosto
+                kOpt = 4
+                tipo_kOpt = tipo_4opt
+        
+        return costoSolucion, kOpt, tipo_kOpt
+    """
+    2-opt:
+    arista_azar = (a,b)
+    r1: 1-2-3-a-4-5         r2: 1-6-7-b-8-9-10   -> ruta original
+    resultado:
+    r1: 1-2-3-a-b-8-9-10    r2: 1-6-7-4-5        -> 1ra opcion
+    r1: 1-2-3-8-9-10        r2: 1-6-7-b-a-4-5    -> 2da opcion
+    r1: 1-5-4-a-b-8-9-10    r2: 1-2-3-7-6        -> 3ra opcion PENDIENTE 
+    r: 1,2,a,3,4,b,5,6     -> ruta original 
+    resultado:
+    r: 1,2,a,b,4,3,5,6     -> 1ra opcion
+    r: 1,6,5,b,a,3,4,2     -> 2da opcion PENDIENTE
+    
+    r1: 1,2,3,a,4,5,6          r2: 1,7,8,b,9,10,11,12
+    costoR1 = 123               costoR2 = 150
+    resultado:
+    r1: 1,2,3,a,b,9,10,11,12    r2: 1,7,8,4,5,6
+    new_cost = costoSolucion + costo(a,b) + costo(8,4) - costo(a,4) - costo(8,b)
+    """
     def swap_2opt(self, lista_permitidos, ind_permitidos, ind_random, rutas_orig):
         sol_factible = False
         costo_solucion = self.getCostoAsociado()
@@ -530,25 +581,12 @@ class Solucion(Grafo):
 
         return rutas, ADD[:1], DROP, costo_solucion, index_ADD, index_DROP
 
-    #2-opt:
-    #arista_azar = (a,b)
-    #r1: 1-2-3-a-4-5         r2: 1-6-7-b-8-9-10   -> ruta original
-    def evaluar_2opt(self, lista_permitidos, ind_permitidos, ind, rutas):
+    def evaluar_2opt(self, aristaIni, ind_rutas, ind_A, rutas):
         sol_factible = False
         opcion = -1                     #Opcion = 0 -> 1ra opcion   = 1 --> 2da opcion   = -1 --> En la misma ruta
         costo_solucion = float("inf")
 
-        A_r1_add = lista_permitidos[ind_permitidos[ind]]
-        costo_r_add1 = A_r1_add.getPeso()
-
-        V_origen = A_r1_add.getOrigen()
-        V_destino = A_r1_add.getDestino()
-        ind_rutas, ind_A = self.getPosiciones(V_origen, V_destino, rutas)
-        
-        #resultado:
-        #r1: 1-2-3-a-b-8-9-10    r2: 1-6-7-4-5        -> 1ra opcion
-        #r1: 1-2-3-8-9-10        r2: 1-6-7-b-a-4-5    -> 2da opcion
-        #r1: 1-5-4-a-b-8-9-10    r2: 1-2-3-7-6        -> 3ra opcion PENDIENTE 
+        costo_r_add1 = aristaIni.getPeso()
         if(ind_rutas[0]!=ind_rutas[1]):
             for i in range(2):
                 if(i==0):
@@ -558,8 +596,8 @@ class Solucion(Grafo):
                     r2 = rutas[ind_rutas[0]]
                     r1 = rutas[ind_rutas[1]]
                     j = ind_A[0]
-                    ind_A[0] = ind_A[1] +1  #=> La posicion de 'a' es en donde la arista tiene como origen 'a' (+1)
-                    ind_A[1] = j -1         #=> La posicion de 'b' es en donde la arista tiene como destino 'b'(-1)
+                    ind_A[0] = ind_A[1] +1          #=> La posicion de 'a' es en donde la arista tiene como origen 'a' (+1)
+                    ind_A[1] = j -1             	#=> La posicion de 'b' es en donde la arista tiene como destino 'b'(-1)
                 #r1: 1-2-3-a-4-5
                 #left: 1-2-3-a      right: 4-5
                 #A_r1_left = r1.getA()[:ind_A[0]]
@@ -618,11 +656,6 @@ class Solucion(Grafo):
                     opcion = i
         else:
             #En la misma ruta hay factibilidad, por lo tanto se calcula unicamente el costo
-            #arista_azar = (a,b)
-            #r: 1,2,a,3,4,b,5,6
-            #resultado:
-            #r: 1,2,a,b,4,3,5,6
-
             r = rutas[ind_rutas[0]]
             costo_solucion = self.getCostoAsociado()
             V_r = r.getV()
@@ -663,43 +696,31 @@ class Solucion(Grafo):
 
     3-opt
     r1: 1,2,3,a,4,5,6          r2: 1,7,8,b,9,10,11,12
-    costoR1 = 123               costoR2 = 150
+    costoSolucion = 300
     resultado:
     r1: 1,2,3,a,b,4,5,6          r2: 1,7,8,9,10,11,12       -> 1ra opcion
-    r1: 1,2,3,4,5,6              r2: 1,7,8,a,b,9,10,11,12   -> 2da opcion
-    r1: 1,2,3,a,b,4,5,6              r2: 1,7,8,9,10,11,12   -> 2da opcion
-
-    2-opt
-    r1: 1,2,3,a,4,5,6          r2: 1,7,8,b,9,10,11,12
-    costoR1 = 123               costoR2 = 150
-    resultado:
-    r1: 1,2,3,a,b,9,10,11,12    r2: 1,7,8,4,5,6
-    new_cost = costoSolucion + costo(a,b) + costo(8,4) - costo(a,4) - costo(8,b)
-    
-    r: 1,2,a,3,4,b,5,6      costoR = 150
-    resultado:
-    r: 1,2,a,b,4,3,5,6
-    new_cost = costoSolucion + costo(a,b) + costo(3,5) - costo(a,3) - costo(b,5)
+    new_cost = costoSolucion + costo(a,b) + costo(b,4) + costo(8,9) - costo(a,4) - costo(8,b) - costo(b,9) 
+    r1: 1,2,3,b,a,4,5,6          r2: 1,7,8,9,10,11,12       -> 2da opcion PENDIENTE
+    r1: 1,2,3,4,5,6              r2: 1,7,8,a,b,9,10,11,12   -> 3ra opcion PENDIENTE
+    r1: 1,2,3,4,5,6              r2: 1,7,8,b,a,9,10,11,12   -> 4ta opcion PENDIENTE
+    r1: 1,2,3,a,b,9,4,5,6        r2: 1,7,8,10,11,12         -> 5ta opcion PENDIENTE
+    r1: 1,2,3,a,b,9,10,4,5,6     r2: 1,7,8,11,12            -> 6ta opcion PENDIENTE
+    .
+    .
+    .
     """
 
-    def evaluar_3opt(self, lista_permitidos, ind_permitidos, ind, rutas_orig):
+    def evaluar_3opt(self, lista_permitidos, ind_permitidos, ind, rutas):
         sol_factible = False
-        costo_solucion = self.getCostoAsociado()
-        rutas = rutas_orig
-        ADD = []
-        index_ADD = []
-        DROP = []
-        index_DROP = []
-        
-        arista_ini = lista_permitidos[ind_permitidos[ind]]
+        opcion = -1                     #Opcion = 0 -> 1ra opcion   = 1 --> 2da opcion   = -1 --> En la misma ruta
+        costo_solucion = float("inf")
 
-        ADD.append(arista_ini)
-        index_ADD.append(arista_ini.getId())
+        A_r1_add = lista_permitidos[ind_permitidos[ind]]
+        costo_r_add1 = A_r1_add.getPeso()
 
-        V_origen = arista_ini.getOrigen()
-        V_destino = arista_ini.getDestino()
-        
-        ind_rutas, ind_A = self.getPosiciones(V_origen, V_destino, rutas_orig)
+        V_origen = A_r1_add.getOrigen()
+        V_destino = A_r1_add.getDestino()
+        ind_rutas, ind_A = self.getPosiciones(V_origen, V_destino, rutas)
         
         if(ind_rutas[0]!=ind_rutas[1]):
             r1 = rutas[ind_rutas[0]]
