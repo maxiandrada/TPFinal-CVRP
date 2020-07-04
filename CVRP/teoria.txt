@@ -40,10 +40,6 @@ Solucion:
     (3,4) que ahora es (3,6)
     (1,6) que ahora es (1,4)
 
-otra version
-1-2-3-6-4-5     1-7-8-9-10      1-11-12-13-14-15
-Pero tal vez no sea correcto porque estariamos eliminando (3,4) (1,6) (6,7)
-
 .(2,4)
 1-2-4-3-5    1-6-7-8-9-10    1-11-12-13-14-15   => (2,3) que ahora es (2,4)
                                                 => (3,4) que ahora es (3,5)

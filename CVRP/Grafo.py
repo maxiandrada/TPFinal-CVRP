@@ -23,7 +23,7 @@ class Grafo:
     def getDemandaAcumulada(self):
         return self._demandaAcumulada
     
-    def cargaDesdeAristas(self, A):
+    def cargarDesdeAristas(self, A):
         self._A = A
         V = []
         cap = 0
