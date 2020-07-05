@@ -44,6 +44,9 @@ Solucion:
 1-2-4-3-5    1-6-7-8-9-10    1-11-12-13-14-15   => (2,3) que ahora es (2,4)
                                                 => (3,4) que ahora es (3,5)
 
+.(6,9)
+1-2-3-4-5    1-6-9-8-7-10       ADD = [(6,9),()]
+
 3-opt: (se eliminan 3 arcos y se se insertan 3)
 Antes:  v2-v4-v6
 1-2-3-4-5-6-1    -->     1-6-3-2-5-4-1

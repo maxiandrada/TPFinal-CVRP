@@ -48,6 +48,11 @@ class Arista():
     def tieneDestino(self,V):
         return (V == self.getDestino())
 
+    def invertir(self):
+        dest = self._destino
+        self._destino = self._origen
+        self._origen = dest
+    
     def __eq__(self, A):
         eq = ((self.getOrigen() == A.getOrigen()) and (self.getDestino() == A.getDestino())) or ((self.getOrigen() == A.getDestino()) and (self.getDestino() == A.getOrigen()))
         return ((self.__class__ == A.__class__) and eq)

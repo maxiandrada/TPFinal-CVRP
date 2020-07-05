@@ -158,8 +158,8 @@ class CVRP:
         porc_Estancamiento = 1.05
         porc_EstancamientoMax = 1.15
 
-        cond_2opt = True
-        cond_3opt = True
+        #cond_2opt = True
+        #cond_3opt = True
         cond_Optimiz = True
 
         Aristas_Opt = np.array([], dtype = object)
@@ -170,11 +170,11 @@ class CVRP:
         ind_permitidos = np.unique(ind_permitidos)
         Aristas = Aristas_Opt
         
-        print("Aplicamos 2-opt")
-        porcentaje = round(self.__S.getCostoAsociado()/self.__optimo -1.0, 3)
-        
+        #print("Aplicamos 2-opt")
         self.__optimosLocales.append(nuevas_rutas)
+        porcentaje = round(self.__S.getCostoAsociado()/self.__optimo -1.0, 3)
         print("Costo sol Inicial: "+str(self.__S.getCostoAsociado())+"      ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(round(porcentaje*100,3))+"%")
+        
         while(tiempoEjecuc < tiempoMax and porcentaje*100 > 5.0):
             if(cond_Optimiz):
                 ind_permitidos, Aristas = self.getPermitidos(Aristas, lista_tabu, umbral, solucion_refer)    #Lista de elementos que no son tabu
@@ -203,17 +203,25 @@ class CVRP:
             tenureADD = self.__tenureADD
             tenureDROP = self.__tenureDROP
             
-            costo_sol = self.__S.getCostoAsociado()
+            costoSolucion = self.__S.getCostoAsociado()
             #Si encontramos una mejor solucion que la tomada como referencia
             if(nuevo_costo < solucion_refer.getCostoAsociado()):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
+                print("Nuevo costo por kOpt: ", nuevo_costo)
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
+                
+                sol_ini = ""
+                #for i in range(0, len(nuevas_rutas)):
+                #    sol_ini+="\nRuta #"+str(i+1)+": "+str(nuevas_rutas[i].getV())
+                #    sol_ini+="\nCosto asociado: "+str(nuevas_rutas[i].getCostoAsociado())+"      Capacidad: "+str(nuevas_rutas[i].getCapacidad())+"\n"
+                #print(sol_ini)
+                #print("Costo total: ",nueva_solucion.getCostoAsociado())
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
-                if(nuevo_costo < self.__S.getCostoAsociado()):
+                if(nuevo_costo < costoSolucion):
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
                     tiempoTotal = time()-tiempoEstancamiento
                     cad += "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))
@@ -270,7 +278,8 @@ class CVRP:
                 Aristas = Aristas_Opt
                 iteracEstancamiento = 1
                 indOptimosLocales -= 1
-            elif(iteracEstancamiento> 200 and costo_sol*porc_Estancamiento > nuevo_costo and nuevo_costo < costo_sol*porc_EstancamientoMax):
+            elif(iteracEstancamiento> 200 and costoSolucion*porc_Estancamiento > nuevo_costo and nuevo_costo < costoSolucion*porc_EstancamientoMax):
+                nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 tiempoTotal = time()-tiempoEstancamiento
                 costo = nueva_solucion.getCostoAsociado()
