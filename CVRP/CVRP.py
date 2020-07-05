@@ -187,20 +187,10 @@ class CVRP:
             ind_random = np.arange(0,len(ind_permitidos))
             random.shuffle(ind_random)
             
-            # if(iteracEstancamiento_Opt>50):
-            #     iteracEstancamiento_Opt = 1
-            #     if(cond_2opt):
-            #         print("Aplicamos 3-opt")
-            #         cond_2opt = False
-            #     elif(cond_3opt):
-            #         print("Aplicamos 4-opt")
-            #         cond_3opt = False
-            #     else:
-            #         print("Aplicamos 2-opt")
-            #         cond_2opt = cond_3opt = True
-
-            nuevas_rutas, aristasADD, aristasDROP, nuevo_costo = nueva_solucion.swap(self._G.getA(), ind_permitidos, ind_random, rutas_refer, iteracEstancamiento > 200)
-
+            indRutas = indAristas = []
+            nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer)
+            
+            #nuevas_rutas, aristasADD, aristasDROP, nuevo_costo = nueva_solucion.swap(self._G.getA(), ind_permitidos, ind_random, rutas_refer, iteracEstancamiento > 200)
             #if(cond_2opt):
             #    nuevas_rutas, aristasADD, aristasDROP, nuevo_costo = nueva_solucion.swap_2opt(self._G.getA(), ind_permitidos, ind_random, rutas_refer)
             #Para aplicar, cada ruta tiene que tener al menos 3 clientes (o 4 aristas)
@@ -218,17 +208,19 @@ class CVRP:
             if(nuevo_costo < solucion_refer.getCostoAsociado()):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
+                nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
-                if(nueva_solucion.getCostoAsociado() < self.__S.getCostoAsociado()):
+                if(nuevo_costo < self.__S.getCostoAsociado()):
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
                     tiempoTotal = time()-tiempoEstancamiento
                     cad += "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))
-                    cad += "seg    -------> Nuevo optimo local. Costo: "+str(nueva_solucion.getCostoAsociado())
+                    cad += "seg    -------> Nuevo optimo local. Costo: "+str(nuevo_costo)
                     cad += "       ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(porcentaje*100)+"%"
                     print(cad)
+                    
                     self.__S = nueva_solucion
                     self.__rutas = nuevas_rutas
                     tiempoEstancamiento = time()
