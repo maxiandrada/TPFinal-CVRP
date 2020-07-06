@@ -4,11 +4,14 @@ import sys
 import re
 import math 
 import copy
+import numpy as np
 
 class Grafo:
     def __init__(self, M, D):
         self._V = []
         self._A = []
+        self._AristasUnicas = []
+        self.__indAristas = np.array([], dtype = int)
         self._costoAsociado = 0
         self._grado = len(M)
         self._matrizDistancias = M
@@ -52,6 +55,8 @@ class Grafo:
         self._V = V
     def getA(self):
         return self._A
+    def getAristasUnicas(self):
+        return self._AristasUnicas
     def getV(self):
         return self._V
     def getCostoAsociado(self):
@@ -196,6 +201,8 @@ class Grafo:
                 aux = Arista(self._V[fila],self._V[columna],(Matriz[fila][columna]))
                 aux.setId(fila, columna, len(Matriz))
                 self._A.append(aux)
+                if(columna!=fila and columna>fila):
+                    self._AristasUnicas.append(aux)
 
     def getVerticeInicio(self):
         return self._A[0].getOrigen()

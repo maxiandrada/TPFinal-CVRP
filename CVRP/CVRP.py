@@ -67,10 +67,10 @@ class CVRP:
         self.__txt.escribir("+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ GRAFO CARGADO +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
         self.__txt.escribir(str(self._G))
         cad = "\nDemandas:"
-        print(cad)
+        #print(cad)
         for v in self._G.getV():
             cad_aux = str(v)+": "+str(v.getDemanda())
-            print(cad_aux) 
+            #print(cad_aux) 
             cad+="\n"+ cad_aux
         self.__txt.escribir(cad)
         print("\nSumDemanda: ",sum(self.__Demandas))
@@ -138,11 +138,13 @@ class CVRP:
     def tabuSearch(self):
         lista_tabu = []
         ind_permitidos = np.array([], dtype = int)
+        tiempo=time()
         nuevas_rutas = copy.deepcopy(self.__rutas)
         rutas_refer = copy.deepcopy(nuevas_rutas)
         nueva_solucion = copy.deepcopy(self.__S)
         solucion_refer = copy.deepcopy(nueva_solucion)
         nuevo_costo = self.__S.getCostoAsociado()
+        print("tiempo: "+str(tiempo-time()))
         
         #Atributos de tiempo e iteraciones
         tiempoIni = time()
@@ -163,23 +165,26 @@ class CVRP:
         cond_Optimiz = True
 
         Aristas_Opt = np.array([], dtype = object)
+        #for EP in self._G.getAristasUnicas():
         for EP in self._G.getA():
-            if(EP.getOrigen() != EP.getDestino() and EP.getDestino()!=1 and EP.getPeso() <= umbral):
+            if(EP.getDestino()!=EP.getOrigen() and EP.getDestino()!=1 and EP.getPeso() <= umbral):
                 Aristas_Opt = np.append(Aristas_Opt, EP)
                 ind_permitidos = np.append(ind_permitidos, EP.getId())
         ind_permitidos = np.unique(ind_permitidos)
         Aristas = Aristas_Opt
-        
+        #print("Aristas: "+str(Aristas))
         #print("Aplicamos 2-opt")
         self.__optimosLocales.append(nuevas_rutas)
         porcentaje = round(self.__S.getCostoAsociado()/self.__optimo -1.0, 3)
         print("Costo sol Inicial: "+str(self.__S.getCostoAsociado())+"      ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(round(porcentaje*100,3))+"%")
         
         while(tiempoEjecuc < tiempoMax and porcentaje*100 > 5.0):
+            tiempo = time()
             if(cond_Optimiz):
                 ind_permitidos, Aristas = self.getPermitidos(Aristas, lista_tabu, umbral, solucion_refer)    #Lista de elementos que no son tabu
                 ind_AristasOpt = copy.deepcopy(ind_permitidos)
                 self.__umbralMin = 0
+            #print("Tiempo optimiz: "+str(time()-tiempo))
             cond_Optimiz = False
             ADD = []
             DROP = []
@@ -187,8 +192,10 @@ class CVRP:
             ind_random = np.arange(0,len(ind_permitidos))
             random.shuffle(ind_random)
             
+            tiempo = time()
             indRutas = indAristas = []
             nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer)
+            #print("Tiempo evaluar Opt: "+str(time()-tiempo))
             
             #nuevas_rutas, aristasADD, aristasDROP, nuevo_costo = nueva_solucion.swap(self._G.getA(), ind_permitidos, ind_random, rutas_refer, iteracEstancamiento > 200)
             #if(cond_2opt):
@@ -204,8 +211,10 @@ class CVRP:
             tenureDROP = self.__tenureDROP
             
             costoSolucion = self.__S.getCostoAsociado()
+            
+            tiempo = time()
             #Si encontramos una mejor solucion que la tomada como referencia
-            if(nuevo_costo < solucion_refer.getCostoAsociado()):
+            if(nuevo_costo < solucion_refer.getCostoAsociado() or nuevo_costo!=float("inf")):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
                 print("Nuevo costo por kOpt: ", nuevo_costo)
@@ -213,11 +222,7 @@ class CVRP:
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 
                 sol_ini = ""
-                #for i in range(0, len(nuevas_rutas)):
-                #    sol_ini+="\nRuta #"+str(i+1)+": "+str(nuevas_rutas[i].getV())
-                #    sol_ini+="\nCosto asociado: "+str(nuevas_rutas[i].getCostoAsociado())+"      Capacidad: "+str(nuevas_rutas[i].getCapacidad())+"\n"
-                #print(sol_ini)
-                #print("Costo total: ",nueva_solucion.getCostoAsociado())
+                
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
@@ -261,7 +266,7 @@ class CVRP:
                 iteracEstancamiento = 1
                 Aristas = Aristas_Opt
             #Si se estancó nuevamente, tomamos la proxima sol peor que difiera un 5% del optimo o la penultima de los optimos locales
-            elif(iteracEstancamiento > 200 and len(self.__optimosLocales) >= indOptimosLocales*(-1)):
+            elif(iteracEstancamiento > 100 and len(self.__optimosLocales) >= indOptimosLocales*(-1)):
                 nuevas_rutas = self.__optimosLocales[indOptimosLocales]
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 costo = nueva_solucion.getCostoAsociado()
@@ -278,7 +283,7 @@ class CVRP:
                 Aristas = Aristas_Opt
                 iteracEstancamiento = 1
                 indOptimosLocales -= 1
-            elif(iteracEstancamiento> 200 and costoSolucion*porc_Estancamiento > nuevo_costo and nuevo_costo < costoSolucion*porc_EstancamientoMax):
+            elif(iteracEstancamiento> 50 and costoSolucion*porc_Estancamiento > nuevo_costo and nuevo_costo < costoSolucion*porc_EstancamientoMax):
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 tiempoTotal = time()-tiempoEstancamiento
@@ -297,7 +302,9 @@ class CVRP:
             else:
                 nuevas_rutas = rutas_refer
                 nueva_solucion = solucion_refer
-            
+            #print("Tiempo if: "+str(time()-tiempo))
+
+
             #Añado y elimino de la lista tabu
             if (aristasADD != []):
                 ADD.append(Tabu(aristasADD[0], tenureADD))
@@ -342,12 +349,22 @@ class CVRP:
         ind_permitidos = np.array([], dtype = int)
 
         #No tengo en consideracion a las aristas que exceden el umbral y las que pertencen a S
+        A_solucion = copy.copy(solucion.getA())
         for EP in Aristas:
             pertS = False
-            for A_S in solucion.getA():
+            
+            i=0
+            while(i < len(A_solucion)):
+                A_S = A_solucion[i]
                 if A_S == EP:
+                    A_solucion.pop(i)
                     pertS = True
                     break
+                i+=1
+            #for A_S in solucion.getA():
+            #    if A_S == EP:
+            #        pertS = True
+            #        break
             if(not pertS and self.__umbralMin <= EP.getPeso() and EP.getPeso() <= umbral):
                 AristasNuevas.append(EP)
                 ind_permitidos = np.append(ind_permitidos, EP.getId())
