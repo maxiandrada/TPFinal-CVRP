@@ -166,8 +166,8 @@ class CVRP:
 
         Aristas_Opt = np.array([], dtype = object)
         #for EP in self._G.getAristasUnicas():
-        for EP in self._G.getA():
-            if(EP.getDestino()!=EP.getOrigen() and EP.getDestino()!=1 and EP.getPeso() <= umbral):
+        for EP in self._G.getAristasUnicas():
+            if(EP.getDestino()!=1 and EP.getPeso() <= umbral):
                 Aristas_Opt = np.append(Aristas_Opt, EP)
                 ind_permitidos = np.append(ind_permitidos, EP.getId())
         ind_permitidos = np.unique(ind_permitidos)
@@ -195,6 +195,7 @@ class CVRP:
             tiempo = time()
             indRutas = indAristas = []
             nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer)
+            print("Nuevo costo[CVRP]: ", nuevo_costo)
             #print("Tiempo evaluar Opt: "+str(time()-tiempo))
             
             #nuevas_rutas, aristasADD, aristasDROP, nuevo_costo = nueva_solucion.swap(self._G.getA(), ind_permitidos, ind_random, rutas_refer, iteracEstancamiento > 200)
@@ -214,7 +215,7 @@ class CVRP:
             
             tiempo = time()
             #Si encontramos una mejor solucion que la tomada como referencia
-            if(nuevo_costo < solucion_refer.getCostoAsociado() or nuevo_costo!=float("inf")):
+            if(nuevo_costo < solucion_refer.getCostoAsociado() and False):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
                 print("Nuevo costo por kOpt: ", nuevo_costo)
@@ -352,7 +353,6 @@ class CVRP:
         A_solucion = copy.copy(solucion.getA())
         for EP in Aristas:
             pertS = False
-            
             i=0
             while(i < len(A_solucion)):
                 A_S = A_solucion[i]
