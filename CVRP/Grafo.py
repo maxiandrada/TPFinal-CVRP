@@ -146,10 +146,17 @@ class Grafo:
 
         return minimo
 
-    def cargaVertices(self, secuencia):
+    #Carga desde una secuencia de enteros
+    def cargaVertices(self, secuencia, sinVerticeInicial):
         V = []
-        for x in secuencia:
-            V.append(Vertice(int(x)+1, self._demanda[x]))
+        
+        if(sinVerticeInicial):
+            for x in secuencia:
+                V.append(Vertice(int(x)+1, self._demanda[x]))
+        else:
+            for x in secuencia:
+                V.append(Vertice(int(x), self._demanda[x-1]))
+                    
         return V
 
     def cargaAristas(self):
@@ -189,7 +196,7 @@ class Grafo:
         return salida
     
     def addCliente(self, secuencia):
-        self._V = self.cargaVertices(secuencia)
+        self._V = self.cargaVertices(secuencia, True)
         self._A = self.cargaAristas()
 
     #Cargar las aristas

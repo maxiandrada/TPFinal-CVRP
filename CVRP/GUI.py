@@ -131,7 +131,7 @@ class Ventana(tk.Tk):
                 print("RESOLVIENDO ------------------> "+str(self.__nombreArchivo))
                 self.__cvrp = CVRP(self.__matrizDistancias[i], self.__demanda[i], self.__nroVehiculos[i], self.__capacidad[i],
                         self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.getSolucionInicial(self.__eSolInicial[i].get()),
-                        self.__eOpt[i].get(), self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__optimo[i])
+                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__optimo[i])
                 j
 
     def getSolucionInicial(self,value):
