@@ -1054,7 +1054,7 @@ Ruta #5: [1, 21, 6, 26, 11, 16, 30]
 Costo asociado: 194.363      Capacidad: 71.0
 
 
-Costo total:  849.345        Optimo real:  784.0      Desviación: 8.3%
+Costo total:  817.674        Optimo real:  784.0      Desviación: 4.3%
 
 Cantidad de iteraciones: 139
 Nro de vehiculos: 5
