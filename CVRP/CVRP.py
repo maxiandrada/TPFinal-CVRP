@@ -131,7 +131,7 @@ class CVRP:
         porc_Estancamiento = 1.05
         porc_EstancamientoMax = 1.15
         cond_Optimiz = True
-        cond_Estancamiento = False
+        #cond_Estancamiento = False
 
         Aristas_Opt = np.array([], dtype = object)
         for EP in self._G.getA():
