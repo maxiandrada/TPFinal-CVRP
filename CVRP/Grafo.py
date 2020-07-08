@@ -194,15 +194,19 @@ class Grafo:
 
     #Cargar las aristas
     def cargarDesdeMatriz(self, Matriz, Demanda):
+        #for fila in range(0, len(Matriz)):
+        #    self._V.append(Vertice(fila+1, Demanda[fila]))    #V=[1,3,4] A=[(1,3)(3,4)] => sol 1->3->4->5->2
         for fila in range(0, len(Matriz)):
             self._V.append(Vertice(fila+1, Demanda[fila]))    #V=[1,3,4] A=[(1,3)(3,4)] => sol 1->3->4->5->2
-        for fila in range(0, len(Matriz)):
             for columna in range(0, len(Matriz[fila])):
-                aux = Arista(self._V[fila],self._V[columna],(Matriz[fila][columna]))
+                aux = Arista(Vertice(fila+1, Demanda[fila]),Vertice(columna+1, Demanda[columna]),(Matriz[fila][columna]))
                 aux.setId(fila, columna, len(Matriz))
                 self._A.append(aux)
-                if(columna!=fila and columna>fila):
-                    self._AristasUnicas.append(aux)
+                #aux = Arista(self._V[fila],self._V[columna],(Matriz[fila][columna]))
+                #aux.setId(fila, columna, len(Matriz))
+                #self._A.append(aux)
+                #if(columna!=fila and columna>fila):
+                #    self._AristasUnicas.append(aux)
 
     def getVerticeInicio(self):
         return self._A[0].getOrigen()
