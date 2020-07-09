@@ -67,4 +67,5 @@ class Arista():
     def __repr__(self):
         return str(self)
 
-     
+    def getAristaInvertida(self):
+        return Arista(self._destino,self._origen,self.getPeso())

@@ -9,7 +9,7 @@ from os import listdir
 from os.path import isfile, join
 import ntpath
 # from mpi4py import MPI
-
+#puto el que lee
 def cargarDesdeFile(pathArchivo):
     #+-+-+-+-+-Para cargar la distancias+-+-+-+-+-+-+-+-
     
@@ -91,7 +91,6 @@ def distancia(x1,y1,x2,y2):
 
 # ['Al azar','Vecino mas cercano','Secuencial']
 # ['2-opt', '3-opt']
-
 
 # comm = MPI.COMM_WORLD
 # rank = comm.Get_rank()

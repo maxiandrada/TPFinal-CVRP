@@ -62,6 +62,7 @@ class CVRP:
         costoTotal = 0
         sol_ini = ""
         
+        print("+-+-++-+-++-+-++-+-+Rutas+-+-++-+-++-+-++-+-+")
         for i in range(0, len(rutas)):
             s = rutas[i]
             costoTotal += s.getCostoAsociado()
@@ -71,6 +72,8 @@ class CVRP:
             sol_ini+="\nRuta #"+str(i+1)+": "+str(s.getV())
             sol_ini+="\nCosto asociado: "+str(s.getCostoAsociado())+"      Capacidad: "+str(s.getCapacidad())+"\n"
         sol_ini+="\n--> Costo total: "+str(costoTotal)+"          Capacidad total: "+str(cap)
+        print(sol_ini)
+        print("+-+-++-+-++-+-++-+-++-+-++-+-++-+-++-+-+")
         self.__txt.escribir(sol_ini)
         S.setA(A)
         S.setV(V)
@@ -167,7 +170,7 @@ class CVRP:
             tenureDROP = self.__tenureDROP
             
             costoSolucion = self.__S.getCostoAsociado()
-            #tiempo = time()
+            tiempo = time()
             #Si encontramos una mejor solucion que la tomada como referencia
             if(nuevo_costo < solucion_refer.getCostoAsociado()):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
@@ -177,8 +180,14 @@ class CVRP:
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
-                #print("Tiempo swap: "+str(time()-tiempo))
-                
+                print("Tiempo swap: "+str(time()-tiempo))
+                print("nuevo costo: ", nuevo_costo)
+                print("nueva solucion: ", nueva_solucion.getCostoAsociado())
+                print("costo solucion: ", costoSolucion)
+                print("costo solucion: ", self.__S.getCostoAsociado())
+                print("Opcion: Swap %d-opt opcion: %d " %(k_Opt[0], k_Opt[1]))
+                print("ADD: %s          DROP: %s" %(str(aristasADD), str(aristasDROP)))
+
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
                 if(nuevo_costo < costoSolucion):
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
