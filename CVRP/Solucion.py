@@ -358,9 +358,9 @@ class Solucion(Grafo):
             indADD.append(aristaIni.getId())
             
             indRutas, indAristas = self.getPosiciones(V_origen, V_destino, rutas)
-            indR = [indRutas[0], indRutas[1]]
-            indA = [indAristas[0], indAristas[1]]
-            #tiempo = time()
+            # indR = [indRutas[0], indRutas[1]]
+            # indA = [indAristas[0], indAristas[1]]
+            # #tiempo = time()
             # nuevoCosto, tipo_2opt, DROP_2opt, indDROP_2opt = self.evaluar_2opt(aristaIni, indR, indA, rutas)
             # #print("Tiempo eval2opt: "+str(time()-tiempo))
             # if(nuevoCosto < costoSolucion):
