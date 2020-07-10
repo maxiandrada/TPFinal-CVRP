@@ -69,3 +69,6 @@ class Arista():
 
     def getAristaInvertida(self):
         return Arista(self._destino,self._origen,self.getPeso())
+
+    def getSumCapacidad(self):
+        return self._origen.getDemanda() + self._destino.getDemanda()

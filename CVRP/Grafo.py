@@ -43,6 +43,7 @@ class Grafo:
         self._V = V
         self._costoAsociado = costo
         return cap
+    
     def setDemanda(self, D):
         self._demanda = D
     def setA(self, A):

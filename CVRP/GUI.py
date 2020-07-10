@@ -42,8 +42,6 @@ class Ventana(tk.Tk):
         self.__labelEstadoGrafo = []
         self.__eSolInicial = []
         self.__combo1 = []
-        self.__labelNroIntercambios = []
-        self.__spinboxNroIntercambios = []
         self.__eOpt = []
         self.__comboOpt = []
         self.__labelTenureADD = []
@@ -65,7 +63,11 @@ class Ventana(tk.Tk):
         self.__labelCantidadResolver = []
         self.__labelRecomienda =[]
         self.__spinboxCantidadResolver = []
-    
+        self.__labelPorcentaje = []
+        self.__ePorcentaje = []
+        self.__entryPorcentaje = []
+        self.__labelPorc = []
+
     def menuConfig(self,frame,i):
         self.__labelEstadoGrafo.append(tk.Label(frame, text = "No se ha cargado Grafo"))
         self.__labelEstadoGrafo[i].place(relx=0.4,rely=0.05)
@@ -73,37 +75,28 @@ class Ventana(tk.Tk):
         
         #Solucion inicial
         self.__labelSolInicial.append(tk.Label(frame, text = "Solucion inicial"))
-        self.__labelSolInicial[i].place(relx=0.2, rely=0.10)
+        self.__labelSolInicial[i].place(relx=0.2, rely=0.15)
         
         self.__combo1list=['Clark & Wright','Vecino mas cercano','Secuencial']
         self.__eSolInicial.append(tk.StringVar())
         self.__combo1.append(ttk.Combobox(frame, textvariable=self.__eSolInicial[i], values=self.__combo1list, width = 29, state = "disabled"))
-        self.__combo1[i].place(relx=0.4, rely=0.10)
-        
-        #Nro de intercambios
-        self.__labelNroIntercambios.append(tk.Label(frame, text= "Intercambio inicial"))
-        self.__labelNroIntercambios[i].place(relx=0.2, rely = 0.20)
-        
-        self.__combo2list=['2-opt', '3-opt']
-        self.__eOpt.append(tk.StringVar())
-        self.__comboOpt.append(ttk.Combobox(frame, textvariable=self.__eOpt, values=self.__combo2list, width = 5, state = "disabled"))
-        self.__comboOpt[i].place(relx=0.45, rely=0.20)      
-        
+        self.__combo1[i].place(relx=0.4, rely=0.15)
+                
         #Tenure ADD
         self.__labelTenureADD.append(tk.Label(frame, text = "Tenure ADD"))
-        self.__labelTenureADD[i].place(relx=0.2, rely=0.27)
+        self.__labelTenureADD[i].place(relx=0.2, rely=0.25)
         self.__boxADD.append(tk.IntVar())
         self.__spinboxADD.append(tk.Spinbox(frame, from_ = 1, to = 100, width = 5, state = "disabled", textvariable = self.__boxADD))
-        self.__spinboxADD[i].place(relx=0.35, rely=0.27)
+        self.__spinboxADD[i].place(relx=0.35, rely=0.25)
 
         #Tenure DROP
         self.__labelTenureDROP.append(tk.Label(frame, text = "Tenure DROP"))
-        self.__labelTenureDROP[i].place(relx=0.50, rely=0.27)
+        self.__labelTenureDROP[i].place(relx=0.50, rely=0.25)
         self.__boxDROP.append(tk.IntVar())
         self.__spinboxDROP.append(tk.Spinbox(frame, from_ = 1, to = 100, width = 5, state = "disabled", textvariable = self.__boxDROP))
-        self.__spinboxDROP[i].place(relx=0.70, rely=0.27)
+        self.__spinboxDROP[i].place(relx=0.70, rely=0.25)
         
-        #Condicion de parada
+        #Condicion de parada (Tiempo)
         self.__labelTiempoEjecucion.append(tk.Label(frame, text = "Tiempo de ejecución"))
         self.__labelTiempoEjecucion[i].place(relx=0.2, rely=0.4)
         self.__eTime.append(tk.StringVar())
@@ -112,16 +105,21 @@ class Ventana(tk.Tk):
         self.__labelTEmin.append(tk.Label(frame, text = "(min)"))
         self.__labelTEmin[i].place(relx=0.75, rely=0.4)
 
+        #Condicion de parada (Porcentaje)
+        self.__labelPorcentaje.append(tk.Label(frame, text = "Porcentaje de parada"))
+        self.__labelPorcentaje[i].place(relx=0.2, rely=0.5)
+        self.__ePorcentaje.append(tk.StringVar())
+        self.__entryPorcentaje.append(tk.Entry(frame, textvariable = self.__ePorcentaje, width = 25, state = "disabled"))
+        self.__entryPorcentaje[i].place(relx=0.5, rely=0.5,relwidth=0.20)
+        self.__labelPorc.append(tk.Label(frame, text = "%"))
+        self.__labelPorc[i].place(relx=0.75, rely=0.5)
+
         #Cantidad de Veces a resolver 
         self.__labelCantidadResolver.append(tk.Label(frame, text= "Cantidad de Veces a resolver"))
-        self.__labelCantidadResolver[i].place(relx=0.3, rely = 0.5)
+        self.__labelCantidadResolver[i].place(relx=0.13, rely = 0.60)
         self.__cantidadResolver.append(tk.IntVar())
         self.__spinboxCantidadResolver.append(tk.Spinbox(frame, from_ = 1, to = 100, width = 5, state = "readonly", textvariable = self.__cantidadResolver[i]))
-        self.__spinboxCantidadResolver[i].place(relx=0.7, rely=0.50)
-
-        #Mostrar datos
-        self.__areaDatos.append(tk.Text(frame, state ="disabled"))
-        self.__areaDatos[i].place(relx=0.2, rely=0.6, relwidth=0.6, relheight=0.4)
+        self.__spinboxCantidadResolver[i].place(relx=0.5, rely=0.60)
 
     def cargarDatos(self):
         for i in range(0,len(self.__listaInstancias)):
@@ -131,7 +129,7 @@ class Ventana(tk.Tk):
                 print("RESOLVIENDO ------------------> "+str(self.__nombreArchivo))
                 self.__cvrp = CVRP(self.__matrizDistancias[i], self.__demanda[i], self.__nroVehiculos[i], self.__capacidad[i],
                         self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.getSolucionInicial(self.__eSolInicial[i].get()),
-                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__optimo[i])
+                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i])
                 j
 
     def getSolucionInicial(self,value):
@@ -151,9 +149,7 @@ class Ventana(tk.Tk):
 
         self.__combo1[i].configure(state = "readonly")
         self.__combo1[i].set('Clark & Wright')
-        self.__comboOpt[i].configure(state = "readonly")
-        self.__comboOpt[i].set('2-opt')
-
+        
         #Tenure ADD y DROP
         self.__boxADD[i].set(tenureADD)
         self.__spinboxADD[i].configure(state = "readonly", textvariable=self.__boxADD[i])
@@ -161,10 +157,16 @@ class Ventana(tk.Tk):
         self.__boxDROP[i].set(tenureDROP)
         self.__spinboxDROP[i].configure(state = "readonly", textvariable=self.__boxDROP[i])
         
+        #Tiempo
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
-        self.__label_RecomiendacTiempo[i].place(relx=0.4, rely=0.35)
+        self.__label_RecomiendacTiempo[i].place(relx=0.30, rely=0.33)
         self.__eTime[i].set(5.0)
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
+
+        #Porcentaje
+        self.__entryPorcentaje[i].configure(state = "normal", textvariable = self.__ePorcentaje[i])
+        self.__ePorcentaje[i].set(5.0)
+
         return 
 
     def listToString(self, s): 
