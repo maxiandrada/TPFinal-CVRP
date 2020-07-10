@@ -173,7 +173,7 @@ class Ventana(tk.Tk):
 
         #Porcentaje
         self.__entryPorcentaje[i].configure(state = "normal", textvariable = self.__ePorcentaje[i])
-        self.__ePorcentaje[i].set(5.0)
+        self.__ePorcentaje[i].set(1.0)
 
         return 
 
