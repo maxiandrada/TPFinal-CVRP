@@ -179,7 +179,6 @@ class CVRP:
             #Si encontramos una mejor solucion que la tomada como referencia
             if(nuevo_costo < solucion_refer.getCostoAsociado() and nuevo_costo!= float("inf")):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
-                print(cad)
                 self.__txt.escribir(cad)
                 # cad = "Rutas antes:"
                 # for i in indRutas:
@@ -215,6 +214,7 @@ class CVRP:
                 if(nuevo_costo < costoSolucion):    
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
                     tiempoTotal = time()-tiempoEstancamiento
+                    print(cad)
                     cad = "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))
                     cad += "seg    -------> Nuevo optimo local. Costo: "+str(nuevo_costo)
                     cad += "       ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(porcentaje*100)+"%"
@@ -290,9 +290,11 @@ class CVRP:
             elif(iteracEstancamiento > iteracEstancMax):
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)            
+                solucion_refer = nueva_solucion
+                rutas_refer = nuevas_rutas
                 umbral = self.calculaUmbral(nueva_solucion.getCostoAsociado())
                 cond_Optimiz = True
-                self.__beta = 1
+                self.__beta = 3
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
                 umbral = self.calculaUmbral(costo)
