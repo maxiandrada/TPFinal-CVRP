@@ -160,6 +160,51 @@ class Grafo:
                     
         return V
 
+    def cargaGrafoDesdeSec(self, secuencia):
+        V = []
+        self._A = []
+        costo = 0
+        demAcum = 0
+        self._demandaAcumulada = []
+        cap = 0
+        
+        #for x in secuencia:
+        for i in range(0, len(secuencia)):
+            x = secuencia[i]
+            V.append(Vertice(int(x), self._demanda[x-1]))
+
+            if i>0:
+                Vfila = V[i-1]
+                Vcol = V[i]
+                fila = Vfila.getValue()-1
+                col = Vcol.getValue()-1
+                dist = self.getMatriz()[fila][col] #Referencias en la matriz
+                new_edge = Arista(Vfila, Vcol, dist)
+                new_edge.setId(fila, col, len(self._matrizDistancias))
+                self._A.append(new_edge)
+                demAcum += new_edge.getOrigen().getDemanda()
+                self._demandaAcumulada.append(demAcum)
+                costo+=dist
+                cap += Vfila.getDemanda()
+        
+        self.setV(V)
+        Vfila = V[-1]
+        Vcol = V[0]
+        fila = Vfila.getValue()-1
+        col = 0
+        dist = self.getMatriz()[fila][col]
+        new_edge = Arista(Vfila, Vcol, dist)
+        new_edge.setId(fila, col, len(self._matrizDistancias))
+        self._A.append(new_edge)
+        demAcum += new_edge.getOrigen().getDemanda()
+        self._demandaAcumulada.append(demAcum)
+        costo+=dist
+        cap += Vfila.getDemanda()
+        self._costoAsociado = costo
+
+        return cap
+        
+
     def cargaAristas(self):
         A=[]
         cantV = len(self._V)
@@ -253,6 +298,7 @@ class Grafo:
             self._demandaAcumulada.append(demAcum)
             costo+=dist
             cap += seq[i].getDemanda()
+        
         self._costoAsociado = costo
 
         return cap

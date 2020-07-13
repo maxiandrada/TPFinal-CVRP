@@ -160,22 +160,15 @@ class Ventana(tk.Tk):
         #Tiempo
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
         self.__label_RecomiendacTiempo[i].place(relx=0.30, rely=0.33)
-        if(len(self.__matrizDistancias) < 50):
-            self.__eTime[i].set(1.0)
-        elif(len(self.__matrizDistancias) < 100):
-            self.__eTime[i].set(3.0)
-        elif(len(self.__matrizDistancias) <= 200):
-            self.__eTime[i].set(6.0)
-        else:
-            self.__eTime[i].set(10.0)
-
+        self.__eTime[i].set(5.0)
+        
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
 
         #Porcentaje
         self.__entryPorcentaje[i].configure(state = "normal", textvariable = self.__ePorcentaje[i])
-        self.__ePorcentaje[i].set(1.0)
+        self.__ePorcentaje[i].set(0.0)
 
-        return 
+        return
 
     def listToString(self, s): 
         str1 = ""  

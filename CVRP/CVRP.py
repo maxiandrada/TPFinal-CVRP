@@ -69,16 +69,18 @@ class CVRP:
                 costoTotal += float(s.getCostoAsociado())
             except AttributeError:
                 print("s: "+str(s))
+                print("rutas: "+str(rutas))
                 print("i: ", i)
                 a = 1/0
             cap += s.getCapacidad()
             A.extend(s.getA())
             V.extend(s.getV())
             sol_ini+="\nRuta #"+str(i+1)+": "+str(s.getV())
+            #sol_ini+="\nAristas: "+str(s.getA())
             sol_ini+="\nCosto asociado: "+str(s.getCostoAsociado())+"      Capacidad: "+str(s.getCapacidad())+"\n"
         sol_ini+="\n--> Costo total: "+str(costoTotal)+"          Capacidad total: "+str(cap)
-        #print(sol_ini)
-        #print("+-+-++-+-++-+-++-+-++-+-++-+-++-+-++-+-+")
+        # print(sol_ini)
+        # print("+-+-++-+-++-+-++-+-++-+-++-+-++-+-++-+-+")
         self.__txt.escribir(sol_ini)
         S.setA(A)
         S.setV(V)
@@ -158,8 +160,6 @@ class CVRP:
                 #tiempo = time()
                 ind_permitidos, Aristas = self.getPermitidos(Aristas, lista_tabu, umbral, solucion_refer)    #Lista de elementos que no son tabu
                 self.__umbralMin = 0
-                #print("Tiempo getPermitidos: ", (time()-tiempo))
-            #print("ind_AristasOpt: "+str(ind_AristasOpt))
             cond_Optimiz = False
             ADD = []
             DROP = []
@@ -168,48 +168,25 @@ class CVRP:
             random.shuffle(ind_random)
             
             indRutas = indAristas = []
-            nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer)
+            nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer, cond_Estancamiento)
             nuevo_costo = round(nuevo_costo, 3)
 
             tenureADD = self.__tenureADD
             tenureDROP = self.__tenureDROP
             
             costoSolucion = self.__S.getCostoAsociado()
-            tiempo = time()
+            #tiempo = time()
             #Si encontramos una mejor solucion que la tomada como referencia
-            if(nuevo_costo < solucion_refer.getCostoAsociado() and nuevo_costo!= float("inf")):
+            if(nuevo_costo < solucion_refer.getCostoAsociado() and aristasADD != []):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
-                # cad = "Rutas antes:"
-                # for i in indRutas:
-                #     cad+="\nruta #%d: %s"%(i,str(nuevas_rutas[i].getA()))
-                # print(cad)
-                # print("Opcion: Swap %d-opt opcion: %d " %(k_Opt[0], k_Opt[1]))
-                # print("ADD: %s          DROP: %s" %(str(aristasADD), str(aristasDROP)))
-                # print("indADD: "+str(indAristas))
+                
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
-                # cad = "\nRUtas ahora:"
-                # for i in indRutas:
-                #     cad+="\nruta #%d: %s"%(i,str(nuevas_rutas[i].getA()))
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
-                #print(cad)
-                # print("nuevo costo: ", nuevo_costo)
-                # print("nueva solucion (cargaSolucion): ", nueva_solucion.getCostoAsociado())
-                # print("costo solucion: ", costoSolucion)
-                # print("costo solucion: ", self.__S.getCostoAsociado())
-                # print("Opcion: Swap %d-opt opcion: %d " %(k_Opt[0], k_Opt[1]))
-                # print("ADD: %s          DROP: %s" %(str(aristasADD), str(aristasDROP)))
-                # print("indADD: "+str(indAristas))
-
-                #Ante algun error printeo para ver q sucedio
-                #if(nuevo_costo!=nueva_solucion.getCostoAsociado() or nueva_solucion.getCapacidad() != self.__S.getCapacidad()):
-                    # cad+="\nRUtas ahora:"
-                    # for i in indRutas:
-                    #     cad+="\nruta #%d: %s"%(i,str(nuevas_rutas[i].getA()))
                 
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
-                # print("Tiempo swap: "+str(time()-tiempo))
+                
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
                 if(nuevo_costo < costoSolucion):    
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
@@ -218,6 +195,13 @@ class CVRP:
                     cad = "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))
                     cad += "seg    -------> Nuevo optimo local. Costo: "+str(nuevo_costo)
                     cad += "       ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(porcentaje*100)+"%"
+                    if(porcentaje*100 > 1000):
+                        print("rutas: "+str(nuevas_rutas))
+                        print("ADD: "+str(aristasADD))
+                        print("DROP: "+str(aristasDROP))
+                        print("ind_AristasOpt: "+str(ind_AristasOpt))
+                        print("ind_permitidos: "+str(ind_permitidos))
+
                     self.__S = nueva_solucion
                     self.__rutas = nuevas_rutas
                     self.__beta = 1
@@ -226,6 +210,7 @@ class CVRP:
                         self.__optimosLocales.pop(0)
                     self.__optimosLocales.append(nuevas_rutas)
                     indOptimosLocales = -2
+                    cond_Estancamiento = False
                     print(cad)
                 else:
                     cad += "\nSolucion peor. Costo: "+str(nueva_solucion.getCostoAsociado())
@@ -261,6 +246,8 @@ class CVRP:
                 
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
+                # print("ind_permitidos: "+str(ind_permitidos))
+                # print("ind_AristasOpt: "+str(ind_AristasOpt))
                 umbral = self.calculaUmbral(costo)
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
@@ -287,7 +274,7 @@ class CVRP:
                 iteracEstancamiento = 1
                 Aristas = Aristas_Opt
                 iteracEstancMax = 300
-            elif(iteracEstancamiento > iteracEstancMax):
+            elif(ind_permitidos == []):
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)            
                 solucion_refer = nueva_solucion
@@ -297,6 +284,7 @@ class CVRP:
                 self.__beta = 3
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
+                Aristas = Aristas_Opt
                 umbral = self.calculaUmbral(costo)
             else:
                 nuevas_rutas = rutas_refer
@@ -311,40 +299,22 @@ class CVRP:
                 lista_tabu.extend(DROP)
                 lista_tabu.extend(ADD)
             else:
-                #print("Lista tabu: "+str(lista_tabu))
                 lista_tabu = []
-                #print("ind permitidos antes: "+str(ind_permitidos))
-                ind_permitidos = copy.copy(ind_AristasOpt)
-                #print("ind permitidos despues: "+str(ind_permitidos))
-
+                ind_permitidos = ind_AristasOpt
+                Aristas = Aristas_Opt
+                cond_Optimiz = True
             
+            if(cond_Estancamiento):
+                print("ind_AristasOpt: "+str(ind_AristasOpt))
+                print("ind_permitidos: "+str(ind_permitidos))
+
             tiempoEjecuc = time()-tiempoIni
             iterac += 1
             iteracEstancamiento += 1
             iteracEstancamiento_Opt += 1
         #Fin del while. Imprimo los valores obtenidos
-
-        print("\nMejor solucion obtenida: "+str(self.__rutas))
-        tiempoTotal = time() - tiempoIni
-        print("\nTermino!! :)")
-        print("Tiempo total: " + str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg\n")
-        self.__txt.escribir("\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Solucion Optima +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
-        sol_ini = ""
-        for i in range(0, len(self.__rutas)):
-            sol_ini+="\nRuta #"+str(i+1)+": "+str(self.__rutas[i].getV())
-            sol_ini+="\nCosto asociado: "+str(self.__rutas[i].getCostoAsociado())+"      Capacidad: "+str(self.__rutas[i].getCapacidad())+"\n"
-        self.__txt.escribir(sol_ini)
-        porcentaje = round(self.__S.getCostoAsociado()/self.__optimo -1.0, 3)
-        self.__txt.escribir("\nCosto total:  " + str(self.__S.getCostoAsociado()) + "        Optimo real:  " + str(self.__optimo)+
-                            "      Desviación: "+str(porcentaje*100)+"%")
-        self.__txt.escribir("\nCantidad de iteraciones: "+str(iterac))
-        self.__txt.escribir("Nro de vehiculos: "+str(self.__nroVehiculos))
-        self.__txt.escribir("Capacidad Maxima/Vehiculo: "+str(self.__capacidadMax))
-        self.__txt.escribir("Tiempo total: " + str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg")
-        tiempoTotal = time()-tiempoEstancamiento
-        self.__txt.escribir("Tiempo de estancamiento: "+str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg")
-        self.__txt.imprimir()
-
+        self.escribirDatosFinales(tiempoIni, iterac, tiempoEstancamiento)
+        
     def getPermitidos(self, Aristas, lista_tabu, umbral, solucion):
         AristasNuevas = []
         ind_permitidos = np.array([], dtype = int)
@@ -380,3 +350,24 @@ class CVRP:
                 i-=1
             i+=1
     
+    def escribirDatosFinales(self, tiempoIni, iterac, tiempoEstancamiento):
+        print("\nMejor solucion obtenida: "+str(self.__rutas))
+        tiempoTotal = time() - tiempoIni
+        print("\nTermino!! :)")
+        print("Tiempo total: " + str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg\n")
+        self.__txt.escribir("\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Solucion Optima +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-")
+        sol_ini = ""
+        for i in range(0, len(self.__rutas)):
+            sol_ini+="\nRuta #"+str(i+1)+": "+str(self.__rutas[i].getV())
+            sol_ini+="\nCosto asociado: "+str(self.__rutas[i].getCostoAsociado())+"      Capacidad: "+str(self.__rutas[i].getCapacidad())+"\n"
+        self.__txt.escribir(sol_ini)
+        porcentaje = round(self.__S.getCostoAsociado()/self.__optimo -1.0, 3)
+        self.__txt.escribir("\nCosto total:  " + str(self.__S.getCostoAsociado()) + "        Optimo real:  " + str(self.__optimo)+
+                            "      Desviación: "+str(porcentaje*100)+"%")
+        self.__txt.escribir("\nCantidad de iteraciones: "+str(iterac))
+        self.__txt.escribir("Nro de vehiculos: "+str(self.__nroVehiculos))
+        self.__txt.escribir("Capacidad Maxima/Vehiculo: "+str(self.__capacidadMax))
+        self.__txt.escribir("Tiempo total: " + str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg")
+        tiempoTotal = time()-tiempoEstancamiento
+        self.__txt.escribir("Tiempo de estancamiento: "+str(int(tiempoTotal/60))+"min "+str(int(tiempoTotal%60))+"seg")
+        self.__txt.imprimir()
