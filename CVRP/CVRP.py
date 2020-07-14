@@ -13,7 +13,7 @@ from clsTxt import clsTxt
 from time import time
 
 class CVRP:
-    def __init__(self, M, D, nroV, capac, archivo, solI, tADD, tDROP, tiempo, porcentaje, optimo):
+    def __init__(self, M, D, nroV, capac, archivo, carpeta, solI, tADD, tDROP, tiempo, porcentaje, optimo):
         self._G = Grafo(M, D)                #Grafo original
         self.__S = Solucion(M, D, sum(D))    #Solucion general del CVRP
         self.__Distancias = M                #Mareiz de distancias
@@ -31,7 +31,7 @@ class CVRP:
         self.__tenureMaxADD = int(tADD*1.7)
         self.__tenureDROP =  tDROP
         self.__tenureMaxDROP = int(tDROP*1.7)
-        self.__txt = clsTxt(str(archivo))
+        self.__txt = clsTxt(str(archivo), str(carpeta))
         self.__tiempoMaxEjec = float(tiempo)
         self.escribirDatos()
         self.__S.setCapacidadMax(self.__capacidadMax)
@@ -169,6 +169,15 @@ class CVRP:
             
             indRutas = indAristas = []
             nuevo_costo, k_Opt, indRutas, indAristas, aristasADD, aristasDROP = nueva_solucion.evaluarOpt(self._G.getA(), ind_permitidos, ind_random, rutas_refer, cond_Estancamiento)
+
+            # print("\n%d-opt Opcion: %d" %(k_Opt[0], k_Opt[1]))
+            # print("ADD: "+str(aristasADD)+"         DROP: "+str(aristasDROP))
+            # print("Rutas antes")
+            # for i in range(0, len(nuevas_rutas)):
+            #     x = nuevas_rutas[i]
+            #     print("ruta #%d: %s" %(i, str(x.getV())))
+            # print("costo antes: ", nueva_solucion.getCostoAsociado()) 
+
             nuevo_costo = round(nuevo_costo, 3)
 
             tenureADD = self.__tenureADD
@@ -180,15 +189,28 @@ class CVRP:
             if(nuevo_costo < solucion_refer.getCostoAsociado() and aristasADD != []):
                 cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
                 self.__txt.escribir(cad)
-                
+
                 nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
                 nueva_solucion = self.cargaSolucion(nuevas_rutas)
                 
+                if(nuevo_costo != nueva_solucion.getCostoAsociado()):
+                    print("\n\nERROR!!!!!!")
+                    print("ADD: "+str(aristasADD)+"     DROP: "+str(aristasDROP)+"\n\n")
+                    a = 1/0
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
                 
                 #Si la nueva solucion es mejor que la obtenida hasta el momento
                 if(nuevo_costo < costoSolucion):    
+                    print("nueva solucion:"+str(nueva_solucion.getV()))
+                    print("solucion refer:"+str(solucion_refer.getV()))
+                    
+                    print("\nRutas ahora")
+                    for i in range(0, len(rutas_refer)):
+                        x = rutas_refer[i]
+                        print("ruta #%d: %s" %(i, str(x.getV())))
+                    print("nuevo costo: ", nuevo_costo,"          getCostoAsociado: ", nueva_solucion.getCostoAsociado())
+                
                     porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
                     tiempoTotal = time()-tiempoEstancamiento
                     print(cad)
@@ -246,8 +268,6 @@ class CVRP:
                 
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
-                # print("ind_permitidos: "+str(ind_permitidos))
-                # print("ind_AristasOpt: "+str(ind_AristasOpt))
                 umbral = self.calculaUmbral(costo)
                 solucion_refer = nueva_solucion
                 rutas_refer = nuevas_rutas
@@ -304,10 +324,6 @@ class CVRP:
                 Aristas = Aristas_Opt
                 cond_Optimiz = True
             
-            if(cond_Estancamiento):
-                print("ind_AristasOpt: "+str(ind_AristasOpt))
-                print("ind_permitidos: "+str(ind_permitidos))
-
             tiempoEjecuc = time()-tiempoIni
             iterac += 1
             iteracEstancamiento += 1

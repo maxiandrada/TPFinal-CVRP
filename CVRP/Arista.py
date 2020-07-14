@@ -62,7 +62,7 @@ class Arista():
         return((self.__class__ == A.__class__) & neq)
 
     def __str__(self):
-        return "(" + str(self._origen) + "," + str(self._destino) + "," + str(self._peso) + ")"
+        return "(" + str(self._origen) + "," + str(self._destino) + "," + str(self._peso) + ":" + str(self._id) + ")"
 
     def __repr__(self):
         return str(self)

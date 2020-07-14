@@ -122,13 +122,14 @@ class Ventana(tk.Tk):
         self.__spinboxCantidadResolver[i].place(relx=0.5, rely=0.60)
 
     def cargarDatos(self):
+        self.__myFolder = os.path.basename(self.__mypath)
         for i in range(0,len(self.__listaInstancias)):
             self.__nombreArchivo = self.__listaInstancias[i]
             print("Se resolverá "+ str(self.__cantidadResolver[i].get())+" veces "+ self.__nombreArchivo)
             for j in range(0,self.__cantidadResolver[i].get()):
                 print("RESOLVIENDO ------------------> "+str(self.__nombreArchivo))
                 self.__cvrp = CVRP(self.__matrizDistancias[i], self.__demanda[i], self.__nroVehiculos[i], self.__capacidad[i],
-                        self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.getSolucionInicial(self.__eSolInicial[i].get()),
+                        self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.__myFolder, self.getSolucionInicial(self.__eSolInicial[i].get()),
                         self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i])
                 j
 
@@ -160,13 +161,19 @@ class Ventana(tk.Tk):
         #Tiempo
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
         self.__label_RecomiendacTiempo[i].place(relx=0.30, rely=0.33)
-        self.__eTime[i].set(5.0)
         
+        if(int(len(self.__matrizDistancias[i])) < 80):
+            self.__eTime[i].set(1.0)
+        elif(int(len(self.__matrizDistancias[i])) < 150):
+            self.__eTime[i].set(3.0)
+        else:
+            self.__eTime[i].set(7.0)
+
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
 
         #Porcentaje
         self.__entryPorcentaje[i].configure(state = "normal", textvariable = self.__ePorcentaje[i])
-        self.__ePorcentaje[i].set(0.0)
+        self.__ePorcentaje[i].set(0.1)
 
         return
 
@@ -204,9 +211,9 @@ class Ventana(tk.Tk):
         self.__listaInstancias = list(self.__listaInstancias)
         self.__mypath = ntpath.split(self.__listaInstancias[0])[0]
         self.__listaInstancias = [ntpath.split(f)[1] for f in self.__listaInstancias]
-        self.tabs(self.__listaInstancias)    
+        self.tabs(self.__listaInstancias)
         self.__nombreArchivo = os.path.splitext(os.path.basename(self.__listaInstancias[0]))[0]
-    
+        
     #Obtengo los datos de mis archivos .vrp
     def cargarDesdeFile(self,pathArchivo):
         #+-+-+-+-+-Para cargar la distancias+-+-+-+-+-+-+-+-

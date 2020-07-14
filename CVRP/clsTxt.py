@@ -4,20 +4,29 @@ import csv
 import re
 import ntpath
 class clsTxt:
-    def __init__(self, nombreTxt):
+    def __init__(self, nombreTxt, Carpeta):
         nombreTxt = nombreArchivo(nombreTxt)
-        print("nombre txt: "+str(nombreTxt))
+        Carpeta = Carpeta + " solucion"
         nombreCarpeta = re.findall(r"[0-9A-Za-z-]+.",nombreTxt)[0]
+        
+        if(os.path.exists(Carpeta)):
+            self.__carpeta = Carpeta
+        else:
+            os.mkdir(Carpeta)
+            self.__carpeta = Carpeta
+        
+        nombreCarpeta = self.__carpeta +"/"+nombreCarpeta
         if(os.path.exists(nombreCarpeta)):
-            self.__nombre = "%s/%s" %(nombreCarpeta,nombreTxt)    
+            self.__nombre = "%s/%s" %(nombreCarpeta,nombreTxt)
         else:
             os.mkdir(nombreCarpeta)
             self.__nombre = "%s/%s" %(nombreCarpeta,nombreTxt)    
+            
         i = 0
         while os.path.exists("%s (%i).txt" %(self.__nombre ,i)):
             i += 1
 
-        self.__nombre = "%s (%i)" %(self.__nombre,i)    
+        self.__nombre = "%s (%i)" %(self.__nombre,i)
         self.__txt = open(str(self.__nombre)+".txt", "w")
         #self.__ArchivoCSV = open(str(self.__nombre)+".csv", "w",newline="")
         self.__st = ""
