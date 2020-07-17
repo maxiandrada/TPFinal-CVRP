@@ -24,7 +24,7 @@ class Solucion():
         cad = ""
         for r in range(len(self.rutas)):
             cad += "\nRecorrido de la Ruta "+str(r+1)+": " + str(rutas[r].getV()) + "\n" + "Aristas de la solución: "+ str(rutas[r].getA())
-            cad += rutas[r].getCapacidadPorCliente()
+            #cad += rutas[r].getCapacidadPorCliente()
             cad += "\nCosto Asociado: " + str(round(rutas[r].getCostoAsociado(),3)) + "        Capacidad: "+ str(rutas[r].capacidad) +"\n"
         cad += f"\nCosto Total: {self.costoTotal}\n"
         return cad
@@ -318,7 +318,8 @@ class Solucion():
             rutas.append(R)
         iteracion = 0
 
-        while(len(ahorros)!=1 and  len(rutas)!=nroVehiculos):
+        while(len(ahorros)>0):
+
             mejorAhorro = ahorros.pop(0)
             capacidadMax = self.capacidadMax
             i = self.buscar(mejorAhorro[0],rutas) # i = (r1,c1) índice de la ruta en la que se encuentra 
@@ -358,8 +359,10 @@ class Solucion():
                         JesInterno = self.esInterno(mejorAhorro[0],rutas[j[0]])
                         IesInterno = self.esInterno(mejorAhorro[1],[j[0]])
             iteracion +=1
+        t = time()
         self.cargarRutas(rutas,dem)
-
+        print(time()-t)
+        1+1
     def swap(self, k_Opt, aristaIni, indRutas, indAristas):
         if(k_Opt[0] == 2):
             opcion = k_Opt[1]
@@ -461,8 +464,8 @@ class Solucion():
                 tipo_kOpt = tipo_4opt
                 DROP = DROP_4opt
                 indDROP = indDROP_4opt
-                print("\nCosto solucion: "+str(costoSolucion))
-                print("%d-opt   Opcion: %d " %(kOpt, tipo_kOpt))
+                # print("\nCosto solucion: "+str(costoSolucion))
+                # print("%d-opt   Opcion: %d " %(kOpt, tipo_kOpt))
             
         #tiempo = time()
         if(costoSolucion != float("inf")):
@@ -724,11 +727,11 @@ class Solucion():
                     #vertice 'b' de la arista (a,b) no se encuentra al final
                     else:
                         V_destino = Vertice(1,0)
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add = Arista(V_origen,V_destino, peso)   # => (6,4, peso)
+                    
+                    A_r2_add = r1.buscarArista((V_origen,V_destino))   # => (6,4, peso)
                     #print("A_r2_add"+str(A_r2_add))
-                    costo_r2_add = peso
-                    A_r2_add.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                    costo_r2_add = A_r2_add.getPeso()
+                    
                 else:
                     A_r1_right = A_r1[ind_A[0]+1:]
                     A_r2_left = A_r2[:ind_A[1]]
@@ -768,11 +771,9 @@ class Solucion():
                     #vertice 'b' de la arista (a,b) no se encuentra al final
                     else:
                         V_destino = Vertice(1,0)
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add = Arista(V_origen,V_destino, peso)   # => (6,4, peso)
+                    A_r2_add = r1.buscarArista((V_origen,V_destino))   # => (6,4, peso)
                     #print("A_r2_add"+str(A_r2_add))
-                    costo_r2_add = peso
-                    A_r2_add.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                    costo_r2_add = A_r2_add.getPeso()
                     #cap_r_add = V_origen.getDemanda() + V_destino.getDemanda()
                     
                     #r1:  1 - 2 - 3 - a - 4 - 5
@@ -934,8 +935,7 @@ class Solucion():
             #ADD
             V_origen = r1.getA()[ind_A[0]-1].getOrigen()
             V_destino = r1.getA()[ind_A[0]].getDestino()
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r1_add = Arista(V_origen, V_destino, peso)
+            A_r1_add = r1.buscarArista((V_origen,V_destino))
             #print("A_r1_add: "+str(A_r1_add))
             #costo_r1_add = peso
 
@@ -947,9 +947,8 @@ class Solucion():
                 #print("A_r2_right: "+str(A_r2_right))
                 V_origen = r2.getA()[ind_A[1]].getOrigen()
                 V_destino = r1.getA()[ind_A[0]-1].getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r2_add = Arista(V_origen, V_destino, peso)
-                A_r2_add.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r2_add = r1.buscarArista((V_origen,V_destino))
+                
                 #print("A_r2_add: "+str(A_r2_add))
                 #costo_r2_add = peso
                 A_r2_left.append(A_r2_add)
@@ -964,9 +963,7 @@ class Solucion():
                 #print("A_r2_right: "+str(A_r2_right))
                 V_origen = r1.getA()[ind_A[0]-1].getDestino()
                 V_destino = r2.getA()[ind_A[1]+1].getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r2_add = Arista(V_origen, V_destino, peso)
-                A_r2_add.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r2_add = r1.buscarArista((V_origen,V_destino))
                 #print("A_r2_add: "+str(A_r2_add))
                 #costo_r2_add = peso
                 if(opcion==4):
@@ -1029,9 +1026,8 @@ class Solucion():
             elif(opcion == -2 or opcion == -3):
                 V_origen = V_r[ind_A[1]+1]
                 V_destino = V_r[ind_A[0]]
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r_add1 = Arista(V_origen,V_destino, peso)
-            A_r_add1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))               
+       
+            A_r_add1 = r.buscarArista((V_origen,V_destino))              
             #print("A_r_add1: "+str(A_r_add1))
             #print("A_r_add2: "+str(A_r_add2))
             
@@ -1464,18 +1460,15 @@ class Solucion():
 
                     V_origen = A_r2_drop1.getDestino()
                     V_destino = A_r1_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add2 = Arista(V_origen, V_destino, peso)
+                    A_r1_add2 =  r1.buscarArista((V_origen,V_destino))
                     
                     V_origen = A_r2_drop1.getOrigen()
                     V_destino = A_r1_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add1 = Arista(V_origen, V_destino, peso)
+                    A_r2_add1 = r1.buscarArista((V_origen,V_destino))
                     
                     V_origen = V_destino
                     V_destino = A_r2_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add2 = Arista(V_origen, V_destino, peso)
+                    A_r2_add2 = r1.buscarArista((V_origen,V_destino))
                 
                     if(A_r1_add1.getDestino() != A_r1_add2.getOrigen()):
                         A_r1_add1 = A_r1_add1.getAristaInvertida()           
@@ -1502,18 +1495,15 @@ class Solucion():
 
                     V_origen = A_r1_drop1.getOrigen()
                     V_destino = A_r2_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add1 = Arista(V_origen, V_destino, peso)
+                    A_r1_add1 = r1.buscarArista((V_origen,V_destino)) 
                     
                     V_origen = A_r2_drop1.getOrigen()
                     V_destino = A_r1_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add1 = Arista(V_origen, V_destino, peso)
+                    A_r2_add1 = r1.buscarArista((V_origen,V_destino))
                     
                     V_origen = V_destino
                     V_destino = A_r2_drop2.getDestino()
-                    costo_r2_add2 = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add2 = Arista(V_origen, V_destino, costo_r2_add2)
+                    A_r2_add2 = r1.buscarArista((V_origen,V_destino))
                     
                     A_r1_add2 = A_r1_add2.getAristaInvertida()
                 elif(i == 3):
@@ -1530,18 +1520,15 @@ class Solucion():
 
                     V_origen = A_r1_drop1.getOrigen()
                     V_destino = A_r2_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add1 = Arista(V_origen, V_destino, peso)
+                    A_r1_add1 = r1.buscarArista((V_origen,V_destino))
 
                     V_origen = V_destino
                     V_destino = A_r1_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add2 = Arista(V_origen, V_destino, peso)
+                    A_r1_add2 = r1.buscarArista((V_origen,V_destino))
 
                     V_origen = A_r1_drop1.getDestino()
                     V_destino = A_r2_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add2 = Arista(V_origen, V_destino, peso)
+                    A_r2_add2 = r1.buscarArista((V_origen,V_destino))
 
 
                     A_r2_add1 = A_r2_add1.getAristaInvertida()
@@ -1572,18 +1559,15 @@ class Solucion():
 
                     V_origen = A_r1_drop1.getOrigen()
                     V_destino = A_r2_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add1 = Arista(V_origen, V_destino, peso)
+                    A_r1_add1 = r1.buscarArista((V_origen,V_destino))
 
                     V_origen = V_destino
                     V_destino = A_r1_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r1_add2 = Arista(V_origen, V_destino, peso)
+                    A_r1_add2 = r1.buscarArista((V_origen,V_destino))
 
                     V_origen = A_r2_drop1.getOrigen()
                     V_destino = A_r1_drop1.getDestino()
-                    costo_r2_add1 = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r2_add1 = Arista(V_origen, V_destino, costo_r2_add1)
+                    A_r2_add1 = r1.buscarArista((V_origen,V_destino))
 
 
 
@@ -1662,17 +1646,15 @@ class Solucion():
                     V_origen = A_r_drop4.getOrigen()
                     V_destino = A_r_drop2.getDestino()
                     peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add2 = Arista(V_origen, V_destino, peso)
+                    A_r_add2 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = A_r_drop3.getOrigen()
                     V_destino = A_r_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add3 = Arista(V_origen, V_destino, peso)
+                    A_r_add3 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = V_destino
                     V_destino = A_r_drop4.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add4 = Arista(V_origen, V_destino, peso)
+                    A_r_add4 = r.buscarArista((V_origen,V_destino))
 
                     if(A_r_add1.getDestino() != A_r_add2.getOrigen()):
                         arista_ini.invertir()
@@ -1689,19 +1671,16 @@ class Solucion():
 
                     V_origen = A_r_drop1.getOrigen()
                     V_destino = A_r_drop4.getOrigen()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add1 = Arista(V_origen, V_destino, peso)
+                    A_r_add1 = r.buscarArista((V_origen,V_destino))
 
                         
                     V_origen = A_r_drop3.getOrigen()
                     V_destino = A_r_drop1.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add3 = Arista(V_origen, V_destino, peso)
+                    A_r_add3 = r.buscarArista((V_origen,V_destino))
                     
                     V_origen = V_destino
                     V_destino = A_r_drop4.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add4 = Arista(V_origen, V_destino, peso)
+                    A_r_add4 = r.buscarArista((V_origen,V_destino))
 
                     if(A_r_add1.getDestino() != A_r_add2.getOrigen()):
                         A_r_add2 = A_r_add2.getAristaInvertida()
@@ -1720,18 +1699,15 @@ class Solucion():
 
                     V_origen = A_r_drop1.getOrigen()
                     V_destino = A_r_drop3.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add1 = Arista(V_origen, V_destino, peso)
+                    A_r_add1 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = V_destino
                     V_destino = A_r_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add2 = Arista(V_origen, V_destino, peso)
+                    A_r_add2 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = A_r_drop2.getOrigen()
                     V_destino = A_r_drop4.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add4 = Arista(V_origen, V_destino, peso)
+                    A_r_add4 = r.buscarArista((V_origen,V_destino))
                     
                     if(A_r_add3.getDestino() != A_r_add4.getOrigen()):
                         A_r_add3 = A_r_add3.getAristaInvertida()
@@ -1750,18 +1726,15 @@ class Solucion():
 
                     V_origen = A_r_drop1.getOrigen()
                     V_destino = A_r_drop3.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add1 = Arista(V_origen, V_destino, peso)
+                    A_r_add1 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = V_destino
                     V_destino = A_r_drop2.getDestino()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add2 = Arista(V_origen, V_destino, peso)
+                    A_r_add2 = r.buscarArista((V_origen,V_destino))
 
                     V_origen = A_r_drop3.getOrigen()
                     V_destino = A_r_drop2.getOrigen()
-                    peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                    A_r_add3 = Arista(V_origen, V_destino, peso)
+                    A_r_add3 = r.buscarArista((V_origen,V_destino))
 
                     if(A_r_add3.getDestino() != A_r_add4.getOrigen()):
                         arista_ini.invertir()
@@ -1825,9 +1798,7 @@ class Solucion():
                     ind_A[1] = ind_A_inicial[1]      
                     V_origen = r1.getA()[ind_A[0]].getOrigen()
                     V_destino = arista_ini.getDestino()
-                    peso = self._matrizDistancias[r1.getA()[ind_A[0]].getOrigen().getValue()-1][arista_ini.getDestino().getValue()-1]    
-                    arista_nueva = Arista(V_origen, V_destino,peso)       
-                    arista_nueva.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                    arista_nueva = r1.buscarArista((V_origen,V_destino))   
                     ADD = [arista_nueva]
                 else:
                     ADD = [arista_ini]
@@ -1843,9 +1814,7 @@ class Solucion():
                     ind_A[1] = ind_A[1]-1         
                     V_origen = r1.getA()[ind_A[0]].getOrigen()
                     V_destino = arista_ini.getOrigen()
-                    peso = self._matrizDistancias[r1.getA()[ind_A[0]].getOrigen().getValue()-1][arista_ini.getOrigen().getValue()-1]    
-                    arista_nueva = Arista(V_origen, V_destino,peso)       
-                    arista_nueva.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                    arista_nueva = r1.buscarArista((V_origen,V_destino))     
                     ADD = [arista_nueva]                    
                 else:
                     ADD = [arista_ini.getAristaInvertida()]
@@ -1886,49 +1855,34 @@ class Solucion():
             #1er DROP
             V_origen = V_r1[ind_A[0]]
             V_destino = V_r1[ind_A[0]+1]
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r1_drop1 = Arista(V_origen, V_destino, peso)
-            A_r1_drop1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r1_drop1 = r1.buscarArista((V_origen,V_destino)) 
 
             #2do DROP
             V_origen = V_destino
             V_destino = V_r1[ind_A[0]+2]
-            
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r1_drop2 = Arista(V_origen, V_destino, peso)
-            A_r1_drop2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r1_drop2 = r1.buscarArista((V_origen,V_destino)) 
             
             #2do ADD
             V_origen = ADD[0].getDestino()
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r1_add2 = Arista(V_origen, V_destino, peso)
-            A_r1_add2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r1_add2 = r1.buscarArista((V_origen,V_destino)) 
             
             #3er DROP
             V_origen = V_r2[ind_A[1]]
             V_destino = V_r2[ind_A[1]+1]
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r2_drop1 = Arista(V_origen, V_destino, peso)
-            A_r2_drop1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r2_drop1 = r1.buscarArista((V_origen,V_destino)) 
             
             #3er ADD
             V_destino = V_r1[ind_A[0]+1]
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r2_add1 = Arista(V_origen, V_destino, peso)
-            A_r2_add1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r2_add1 = r1.buscarArista((V_origen,V_destino)) 
             
             #4to DROP
             V_origen = V_r2[ind_A[1]+1]
             V_destino = V_r2[ind_A[1]+2]
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r2_drop2 = Arista(V_origen, V_destino, peso)
-            A_r2_drop2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r2_drop2 = r1.buscarArista((V_origen,V_destino)) 
             
             #4to ADD
             V_origen = A_r2_add1.getDestino()
-            peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-            A_r2_add2 = Arista(V_origen, V_destino, peso)
-            A_r2_add2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+            A_r2_add2 = r1.buscarArista((V_origen,V_destino)) 
             
             DROP.append(A_r1_drop1)
             DROP.append(A_r1_drop2)
@@ -1984,22 +1938,15 @@ class Solucion():
                 A_r_add1 = arista_ini
                 V_origen = A_r_drop4.getOrigen()
                 V_destino = A_r_drop2.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add2 = Arista(V_origen, V_destino, peso)
-                A_r_add2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
-
+                A_r_add2 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = A_r_drop3.getOrigen()
                 V_destino = A_r_drop1.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add3 = Arista(V_origen, V_destino, peso)
-                A_r_add3.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add3 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = V_destino
                 V_destino = A_r_drop4.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add4 = Arista(V_origen, V_destino, peso)
-                A_r_add4.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add4 = r.buscarArista((V_origen,V_destino)) 
 
                 if(A_r_add1.getDestino() != A_r_add2.getOrigen()):
                     arista_ini.invertir()
@@ -2030,21 +1977,15 @@ class Solucion():
 
                 V_origen = A_r_drop1.getOrigen()
                 V_destino = A_r_drop4.getOrigen()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add1 = Arista(V_origen, V_destino, peso)
-                A_r_add1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add1 = r.buscarArista((V_origen,V_destino)) 
                     
                 V_origen = A_r_drop3.getOrigen()
                 V_destino = A_r_drop1.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add3 = Arista(V_origen, V_destino, peso)
-                A_r_add3.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add3 = r.buscarArista((V_origen,V_destino)) 
                 
                 V_origen = V_destino
                 V_destino = A_r_drop4.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add4 = Arista(V_origen, V_destino, peso)
-                A_r_add4.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add4 = r.buscarArista((V_origen,V_destino)) 
 
                 if(A_r_add1.getDestino() != A_r_add2.getOrigen()):
                     arista_ini.invertir()
@@ -2065,21 +2006,15 @@ class Solucion():
 
                 V_origen = A_r_drop1.getOrigen()
                 V_destino = A_r_drop3.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add1 = Arista(V_origen, V_destino, peso)
-                A_r_add1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add1 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = V_destino
                 V_destino = A_r_drop2.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add2 = Arista(V_origen, V_destino, peso)
-                A_r_add2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add2 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = A_r_drop2.getOrigen()
                 V_destino = A_r_drop4.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add4 = Arista(V_origen, V_destino, peso)
-                A_r_add4.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add4 = r.buscarArista((V_origen,V_destino)) 
                 
                 if(A_r_add3.getDestino() != A_r_add4.getOrigen()):
                     arista_ini.invertir()
@@ -2100,21 +2035,15 @@ class Solucion():
 
                 V_origen = A_r_drop1.getOrigen()
                 V_destino = A_r_drop3.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add1 = Arista(V_origen, V_destino, peso)
-                A_r_add1.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add1 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = V_destino
                 V_destino = A_r_drop2.getDestino()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add2 = Arista(V_origen, V_destino, peso)
-                A_r_add2.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add2 = r.buscarArista((V_origen,V_destino)) 
 
                 V_origen = A_r_drop3.getOrigen()
                 V_destino = A_r_drop2.getOrigen()
-                peso = self._matrizDistancias[V_origen.getValue()-1][V_destino.getValue()-1]
-                A_r_add3 = Arista(V_origen, V_destino, peso)
-                A_r_add3.setId(V_origen.getValue()-1, V_destino.getValue()-1, len(self._matrizDistancias))
+                A_r_add3 = r.buscarArista((V_origen,V_destino)) 
 
                 if(A_r_add3.getDestino() != A_r_add4.getOrigen()):
                     arista_ini.invertir()
