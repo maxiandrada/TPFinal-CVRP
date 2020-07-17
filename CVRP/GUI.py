@@ -145,9 +145,12 @@ class Ventana(tk.Tk):
         self.__labelRecomienda.append(tk.Label(text = "Se recomienda los siguientes valores..."))
         self.__labelRecomienda[i].place(relx=0.3,rely=0.05)        
         
-        tenureADD = int(len(self.__matrizDistancias[i])**(1/2.0))
-        tenureDROP = int(len(self.__matrizDistancias[i])**(1/2.0))+1
+        # tenureADD = int(len(self.__matrizDistancias[i])**(1/2.0))
+        # tenureDROP = int(len(self.__matrizDistancias[i])**(1/2.0))+1
 
+        tenureADD = int(len(self.__matrizDistancias[i])*0.1)
+        tenureDROP = int(len(self.__matrizDistancias[i])*0.1)+1
+        
         self.__combo1[i].configure(state = "readonly")
         self.__combo1[i].set('Clark & Wright')
         
@@ -225,8 +228,13 @@ class Ventana(tk.Tk):
             indSeccionCoord = lineas.index("NODE_COORD_SECTION \n")
             lineaEOF = lineas.index("DEMAND_SECTION \n")
         except ValueError:
-            indSeccionCoord = lineas.index("NODE_COORD_SECTION\n")
-            lineaEOF = lineas.index("DEMAND_SECTION\n")
+            try:
+                indSeccionCoord = lineas.index("NODE_COORD_SECTION\n")
+                lineaEOF = lineas.index("DEMAND_SECTION\n")
+            except ValueError:
+                indSeccionCoord = lineas.index("NODE_COORD_SECTION\t\n")
+                lineaEOF = lineas.index("DEMAND_SECTION\t\n")
+                
         #Linea optimo y nro de vehiculos
         lineaOptimo = [x for x in lineas[0:indSeccionCoord] if re.search(r"COMMENT+",x)][0]
         parametros = re.findall(r"[0-9]+",lineaOptimo)
@@ -247,11 +255,12 @@ class Ventana(tk.Tk):
         for i in range(indSeccionCoord+1, lineaEOF):
             textoLinea = lineas[i]
             textoLinea = re.sub("\n", "", textoLinea) #Elimina los saltos de línea
-            splitLinea = textoLinea.split(" ") #Divide la línea por " " 
+            splitLinea = textoLinea.split() #Divide la línea por " " 
             if(splitLinea[0]==""):
                 coordenadas.append([splitLinea[1],splitLinea[2],splitLinea[3]]) #[[v1,x1,y1], [v2,x2,y2], ...]
             else:
                 coordenadas.append([splitLinea[0],splitLinea[1],splitLinea[2]]) #[[v1,x1,y1], [v2,x2,y2], ...]
+        #print("coordenadas: "+str(coordenadas))
         self.cargaMatrizDistancias(coordenadas)
         
         #+-+-+-+-+-+-+-Para cargar la demanda+-+-+-+-+-+-+-
@@ -265,9 +274,13 @@ class Ventana(tk.Tk):
         for i in range(indSeccionDemanda+1, indLineaEOF):
             textoLinea = lineas[i]
             textoLinea = re.sub("\n", "", textoLinea) #Elimina los saltos de línea
-            splitLinea = textoLinea.split(" ") #Divide la línea por " " 
-            demanda.append(float(splitLinea[1]))
-
+            splitLinea = textoLinea.split() #Divide la línea por " " 
+            try:
+                demanda.append(float(splitLinea[1]))
+            except:
+                splitLinea = textoLinea.split()
+                demanda.append(float(splitLinea[1]))
+        #print(str(demanda))
         self.__demanda.append(demanda)
     
     def cargaMatrizDistancias(self, coordenadas):
