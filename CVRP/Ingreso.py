@@ -10,16 +10,14 @@ class Ingreso():
             print("No se cargaron argumentos")
             self.mostrarAyuda()
             sys.exit()
+        self.M = []
         self.tenureADD = 0
-        self.tenureMaxADD = 0
         self.tenureDROP = 0
-        self.tenureMaxDROP = 0
         self.nombreArchivo = ""
         self.tiempo = 0
         self.iteraciones = 0
-        self.intercambios = 0
+
         self.subiteraciones = 0
-        self.solucionInicial = 0
         self.controlArgumentos()
         
 
@@ -34,25 +32,25 @@ class Ingreso():
         parser.add_argument("--tenuredrop", nargs='?', default = 0 , help='--tenuredrop tenure drop (si no se especifica se toma por defecto el 10% de la cantidad de vertices)',type=int)
         #parser.add_argument("--tenuredropmax", nargs='?', default = 0 , help='--tenuredropmax tenure drop máximo (si no se especifica se toma por defecto el 15% de la cantidad de vertices)',type=int)
         parser.add_argument("--intercambios", nargs='?', default = 0 , help='--intercambios número de intercambios',type=int)
-        parser.add_argument("--solucioninicial", nargs='?',default = 0 ,  help='--solucioninicial tipo de solución inicial, 0 para vecino cercano, 1 para solución inicial al azar',type=int)
+        parser.add_argument("-I", nargs='?',default = 0 ,  help='--solucioninicial tipo de solución inicial, 0 para vecino cercano, 1 para solución inicial al azar',type=int)
         parser.add_argument('--capacidad', nargs='?', default = 1000 , help='--iteration cantidad máxima de iteraciones, por defecto se toma 1000',type=int)   
         parser.add_argument('--time', nargs='?', default = 0 , help='--time tiempo total de la busqueda se expresa en minutos',type=int)
         parser.add_argument('--opt',nargs='?', default = 2 , help='2-opt o 3-opt',type=int)
         arg = parser.parse_args()
         self.cargarDesdeEUC_2D(str(arg.file[0]))
-        
-        return [self.getMatriz(),
-                self.getDemanda(),
-                arg.v,
-                arg.capacidad,
-                str(arg.file[0]),
-                int(arg.solucioninicial),
-                arg.intercambios,
-                arg.opt,
-                arg.tenureadd,
-                arg.tenuredrop,
-                arg.time,
-                self.getOptimo()]
+        self.M = self.getMatriz()
+        self.D = self.getDemanda()
+        self.NV = self.__nroVehiculos
+        self.C = self.__capacidad
+        self.F = str(arg.file[0])
+        self.I = int(arg.I)
+        self.intercambios = arg.intercambios,
+        self.solucionInicial = arg.opt
+        self.tenureADD = arg.tenureadd
+        self.tenureDROP = arg.tenuredrop
+        self.T = arg.time
+        self.O = self.getOptimo()
+
     def mostrarAyuda(self):
         mensaje = """
                 Se debe cargar una instancia en formato EUC 2D
@@ -70,6 +68,7 @@ class Ingreso():
         print(mensaje)
 
 
+
     def getArchivo(self):
         return self.nombreArchivo
 
@@ -78,13 +77,17 @@ class Ingreso():
         #+-+-+-+-+-Para cargar la distancias+-+-+-+-+-+-+-+-
         archivo = open(pathArchivo,"r")
         lineas = archivo.readlines()
-        
+        self.nombreArchivo = os.path.splitext(os.path.basename(str(archivo)))[0]
+
         #Busco la posiciones de...
-        indSeccionCoord = lineas.index("NODE_COORD_SECTION \n")
-        lineaEOF = lineas.index("DEMAND_SECTION \n")
-        
+        try:
+            indSeccionCoord = lineas.index("NODE_COORD_SECTION \n")
+            lineaEOF = lineas.index("DEMAND_SECTION \n")
+        except ValueError:
+            indSeccionCoord = lineas.index("NODE_COORD_SECTION\n")
+            lineaEOF = lineas.index("DEMAND_SECTION\n")
         #Linea optimo y nro de vehiculos
-        lineaOptimo = [x for x in lineas[0:indSeccionCoord] if re.findall(r"Optimal value:[\S 0-9]+",x)][0]
+        lineaOptimo = [x for x in lineas[0:indSeccionCoord] if re.findall(r"Optimal value:[\S 0-9]+",x) or  re.findall(r"Best Value:[\S 0-9]+",x)][0]
         parametros = re.findall(r"[0-9]+",lineaOptimo)
         
         self.__nroVehiculos = int(float(parametros[0]))
@@ -93,6 +96,8 @@ class Ingreso():
         self.__optimo = float(parametros[1])
         print(self.__optimo)
         
+        lineaCapacidad = [x for x in lineas[0:indSeccionCoord] if re.findall(r"CAPACITY[\s]*:[\s]*[0-9]+",x)][0]
+        self.__capacidad = float(re.findall(r"[0-9]+",lineaCapacidad)[0])
         #Lista donde irán las coordenadas (vertice, x, y)
         coordenadas = []
         #Separa las coordenadas en una matriz, es una lista de listas (vertice, coordA, coordB)
@@ -105,8 +110,7 @@ class Ingreso():
             else:
                 coordenadas.append([splitLinea[0],splitLinea[1],splitLinea[2]]) #[[v1,x1,y1], [v2,x2,y2], ...]
         self.cargaMatrizDistancias(coordenadas)
-        print("Matriz: "+str(self.__matrizDistancias))
-
+        #print("Matriz: "+str(self.__matrizDistancias))
         #+-+-+-+-+-+-+-Para cargar la demanda+-+-+-+-+-+-+-
         seccionDemanda = [x for x in lineas[indSeccionCoord:] if re.findall(r"DEMAND_SECTION+",x)][0]
         indSeccionDemanda = lineas.index(seccionDemanda)
@@ -121,13 +125,20 @@ class Ingreso():
             splitLinea = textoLinea.split(" ") #Divide la línea por " " 
             demanda.append(float(splitLinea[1]))
         self.__demanda = demanda
-        print("\nDemanda: "+str(self.__demanda))
+        #print("\nDemanda: "+str(self.__demanda))
     
     def cargaMatrizDistancias(self, coordenadas):
         matriz = []
         #Arma la matriz de distancias. Calculo la distancia euclidea
+        coordNuevo = []
         for coordRow in coordenadas:
-            fila = []            
+            fila = []           
+            coord = []
+            coord.append(int(coordRow[0]))
+            coord.append(float(coordRow[1]))
+            coord.append(float(coordRow[2]))
+            coordNuevo.append(coord)
+
             for coordCol in coordenadas:
                 x1 = float(coordRow[1])
                 y1 = float(coordRow[2])
@@ -136,13 +147,14 @@ class Ingreso():
                 dist = self.distancia(x1,y1,x2,y2)
                 
                 #Para el primer caso. Calculando la distancia euclidea entre si mismo da 0
-                if(dist == 0):
-                    dist = 999999999999 #El modelo no debería tener en cuenta a las diagonal, pero por las dudas
                 fila.append(dist)
 
             #print("Fila: "+str(fila))    
             matriz.append(fila)
-        self.__matrizDistancias =  matriz
+        self.coordenadas=coordNuevo
+        self.__matrizDistancias = matriz
+        for i in range(len(self.__matrizDistancias)):
+            self.__matrizDistancias[i][i]=float("inf")
 
     def distancia(self, x1,y1,x2,y2):
         return round(math.sqrt((x1-x2)**2+(y1-y2)**2),3)

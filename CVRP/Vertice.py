@@ -1,8 +1,11 @@
 class Vertice():
 
-    def __init__(self,V, D):
+    def __init__(self,V, D=None):
         self._value = V
-        self._demanda = D
+        if D is None:
+            self._demanda = 0
+        else:
+            self._demanda = D
 
     def getValue(self):
         return self._value
@@ -33,3 +36,12 @@ class Vertice():
         if(self.__class__ != otro.__class__ ):
             return (int(self.getValue()) >= int(otro))
         return (self.__class__ == otro.__class__ and str(self.getValue()) >= str(otro.getValue()))
+
+    def __hash__(self):
+        return hash(self.getValue())
+
+if __name__ == "__main__":
+    v1 = Vertice(1,4)
+    v2 = Vertice(2,4)
+
+    print(hash(v2))

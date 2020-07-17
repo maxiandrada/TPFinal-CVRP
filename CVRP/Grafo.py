@@ -10,6 +10,7 @@ class Grafo:
     def __init__(self, M, D):
         self._V = []
         self._A = []
+        self.dictA = {}
         self._AristasUnicas = []
         self.__indAristas = np.array([], dtype = int)
         self._costoAsociado = 0
@@ -19,6 +20,7 @@ class Grafo:
         self._demandaAcumulada = []
         if(M!=[] and D!=[]):
             self.cargarDesdeMatriz(M, D)
+            self._grado=len(M)
         
     def getGrado(self):
         return self._grado
@@ -33,14 +35,17 @@ class Grafo:
         costo = 0
         demAcum = 0
         self._demandaAcumulada = []
+        self.dictAristasRuta = {}
         for a in A:
             v = a.getOrigen()
             V.append(v)
             costo += a.getPeso()
             cap += self._demanda[v.getValue()-1]
+            self.dictAristasRuta.update({hash(a):a})
             demAcum += v.getDemanda()
             self._demandaAcumulada.append(demAcum)
         self._V = V
+        self.capacidad = cap
         self._costoAsociado = costo
         return cap
     
@@ -95,7 +100,7 @@ class Grafo:
                 else:
                     salida += str(V[i]) + "     "
                 for j in range(0,len(V)):
-                    if(self._matrizDistancias[i][j]==999999999999):
+                    if(self._matrizDistancias[i][j]==float("inf")):
                         salida += str(0) + "         "
                     else:
                         salida += str(self._matrizDistancias[i][j]) + "    "
@@ -210,6 +215,7 @@ class Grafo:
                 aux = Arista(Vertice(fila+1, Demanda[fila]),Vertice(columna+1, Demanda[columna]),(Matriz[fila][columna]))
                 aux.setId(fila, columna, len(Matriz))
                 self._A.append(aux)
+                self.dictA.update({hash(aux):aux})
                 #aux = Arista(self._V[fila],self._V[columna],(Matriz[fila][columna]))
                 #aux.setId(fila, columna, len(Matriz))
                 #self._A.append(aux)
@@ -227,36 +233,65 @@ class Grafo:
 
     #Para que cargue desde una secuencia de vertices por ej. s1= [1,3,4,5,8,9,6,7] -> s2=[1,3,9,5,8,4,6,7]
     def cargarDesdeSecuenciaDeVertices(self,seq:list):
+        v_original = self.getV()
         self._V = seq
         self._A = []
         costo = 0
         demAcum = 0
         self._demandaAcumulada = []
         cap = 0
-        
+        self.dictAristasRuta = {}
         for i in range(0,len(seq)):
             if(i< len(seq)-1):
                 fila = seq[i].getValue()-1
                 col = seq[i+1].getValue()-1
                 dist = self.getMatriz()[fila][col] #Referencias en la matriz
-                new_edge = Arista(seq[i], seq[i+1], dist)
+                new_edge = self.buscarArista((seq[i].getValue(), seq[i+1].getValue()))
                 new_edge.setId(fila, col, len(self._matrizDistancias))
+                self.dictAristasRuta.update({hash(new_edge):new_edge})
                 self.getA().append(new_edge)
             else:
-                fila = seq[i].getValue()-1
-                col = 0
-                dist = self.getMatriz()[fila][col]
-                new_edge = Arista(seq[i], seq[0], dist)
+                fila = seq[i].getValue()
+                new_edge = self.buscarArista((fila, 1))
                 new_edge.setId(fila, col, len(self._matrizDistancias))
+                dist = new_edge.getPeso()
+                self.dictAristasRuta.update({hash(new_edge):new_edge})
                 self.getA().append(new_edge)
             demAcum += new_edge.getOrigen().getDemanda()
             self._demandaAcumulada.append(demAcum)
             costo+=dist
             cap += seq[i].getDemanda()
         self._costoAsociado = costo
-
+        self.capacidad = cap
         return cap
 
     def incrementaFrecuencia(self):
         for x in range(0,len(self.getA())):
             self.getA()[x].incFrecuencia()
+
+    def buscarArista(self,A):
+        return self.dictA.get(hash(A))
+
+if __name__ == "__main__":
+    from time import time
+    from Ingreso import Ingreso
+    import sys
+
+    #arg = Ingreso(sys.argv)
+
+    M = []
+    for i in range(1,500):
+        fila = []
+        for j in range(1,500):
+            fila.append(j)
+        M.append(fila)
+    G = Grafo(M,list(range(1000)))
+    A = G.getA()
+    arista = A[455]
+    print(arista)
+    print("hash arista: ", hash(arista))
+    G.getA()[455]
+    t = time()
+    ret = G.buscarArista((3,37))
+    print(time()-t)
+    print(ret)

@@ -1,5 +1,4 @@
 from Vertice import Vertice
-
 class Arista():
     def __init__(self,origen,destino,peso):
         self._origen = origen
@@ -72,3 +71,12 @@ class Arista():
 
     def getSumCapacidad(self):
         return self._origen.getDemanda() + self._destino.getDemanda()
+
+    def __hash__(self):
+        return hash((self._origen.getValue(),self._destino.getValue()))
+
+if __name__ == "__main__":
+    a = Arista(Vertice(1,0),Vertice(2,0),0)
+    from time import time
+    t = time()
+

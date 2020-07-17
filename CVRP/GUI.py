@@ -129,7 +129,7 @@ class Ventana(tk.Tk):
                 print("RESOLVIENDO ------------------> "+str(self.__nombreArchivo))
                 self.__cvrp = CVRP(self.__matrizDistancias[i], self.__demanda[i], self.__nroVehiculos[i], self.__capacidad[i],
                         self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.getSolucionInicial(self.__eSolInicial[i].get()),
-                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i])
+                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i],self.coordenadas)
                 j
 
     def getSolucionInicial(self,value):
@@ -273,8 +273,14 @@ class Ventana(tk.Tk):
     def cargaMatrizDistancias(self, coordenadas):
         matriz = []
         #Arma la matriz de distancias. Calculo la distancia euclidea
+        coordNuevo = []
         for coordRow in coordenadas:
             fila = []         
+            coord = []
+            coord.append(int(coordRow[0]))
+            coord.append(float(coordRow[1]))
+            coord.append(float(coordRow[2]))
+            coordNuevo.append(coord)
             for coordCol in coordenadas:
                 x1 = float(coordRow[1])
                 y1 = float(coordRow[2])
@@ -284,11 +290,11 @@ class Ventana(tk.Tk):
                 
                 #Para el primer caso. Calculando la distancia euclidea entre si mismo da 0
                 if(dist == 0 and float(coordRow[0])==float(coordCol[0])):
-                    dist = 999999999999
+                    dist = float("inf")
                 fila.append(dist)
-
             #print("Fila: "+str(fila))    
             matriz.append(fila)
+        self.coordenadas=coordNuevo
         self.__matrizDistancias.append(np.array(matriz))
 
     def distancia(self, x1,y1,x2,y2):
