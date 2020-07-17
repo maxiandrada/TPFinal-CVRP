@@ -13,8 +13,8 @@ from clsTxt import clsTxt
 from time import time
 from Grafico import Grafico
 class CVRP:
-    def __init__(self, M, D, nroV, capac, archivo, solI, tADD, tDROP, tiempo, porcentaje, optimo,coord):
-        self._G = Grafo(M, D)                #Grafo original
+    def __init__(self, M, D, nroV, capac, archivo, carpeta, solI, tADD, tDROP, tiempo, porcentaje, optimo):       
+        self._G = Grafo(M, D,True)                #Grafo original
         self.__S = Solucion(M,D,capac, nroV)    #Solucion general del CVRP
         self.__Distancias = M                #Mareiz de distancias
         self.__Demandas = D                  #Demandas de los clientes

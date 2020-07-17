@@ -3,12 +3,13 @@ from Arista import Arista as A
 from Grafo import Grafo
 
 class Ruta(Grafo):
-    def __init__(self, M, Demanda, capacidadMax):
+    def __init__(self, M, Demanda, capacidadMax,dictA = None):
         super(Ruta, self).__init__(M, Demanda)
         self.capacidad = 0
         self.capacidadMax = capacidadMax
         self.dictAristasRuta = {} #Contiene las aristas de busqueda
-    
+        if not dictA is None:
+            self.dictA = dictA 
     
     def __str__(self):
         return str(self.getV())

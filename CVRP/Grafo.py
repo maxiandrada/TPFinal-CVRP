@@ -7,7 +7,7 @@ import copy
 import numpy as np
 
 class Grafo:
-    def __init__(self, M, D):
+    def __init__(self, M, D,crearDictA=None):
         self._V = []
         self._A = []
         self.dictA = {}
@@ -21,6 +21,9 @@ class Grafo:
         if(M!=[] and D!=[]):
             self.cargarDesdeMatriz(M, D)
             self._grado=len(M)
+            if not crearDictA is None:
+                if crearDictA:
+                    self.dictA = self.crearDictA()
         
     def getGrado(self):
         return self._grado
@@ -215,12 +218,18 @@ class Grafo:
                 aux = Arista(Vertice(fila+1, Demanda[fila]),Vertice(columna+1, Demanda[columna]),(Matriz[fila][columna]))
                 aux.setId(fila, columna, len(Matriz))
                 self._A.append(aux)
-                self.dictA.update({hash(aux):aux})
+                
                 #aux = Arista(self._V[fila],self._V[columna],(Matriz[fila][columna]))
                 #aux.setId(fila, columna, len(Matriz))
                 #self._A.append(aux)
                 #if(columna!=fila and columna>fila):
                 #    self._AristasUnicas.append(aux)
+
+    def crearDictA(self):
+        dictA = {}
+        for a in self.getA():
+            dictA.update({hash(a):a})
+        return dictA
 
     def getVerticeInicio(self):
         return self._A[0].getOrigen()

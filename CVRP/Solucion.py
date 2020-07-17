@@ -18,6 +18,8 @@ class Solucion():
         self.nroVehiculos = nroVehiculos
         self.demanda = demanda
         self.rutas = []
+        rutaAux = Ruta(M,demanda,capacidad)
+        self.dictA = rutaAux.crearDictA()
 
     def __str__(self):
         rutas = self.rutas
@@ -240,7 +242,7 @@ class Solucion():
         # for i in range(0,len(rutas)):
         #     print("R #%d: %s" %(i, str(rutas[i])))
         for r in rutas:
-            S = Ruta(self._matrizDistancias, self.demanda, 0)
+            S = Ruta(self._matrizDistancias, self.demanda, 0,self.dictA)
             cap = S.cargarDesdeSecuenciaDeVertices(S.cargaVertices(r, False))
             S.setCapacidad(cap)
             S.setCapacidadMax(capacidad)
@@ -2311,6 +2313,9 @@ if __name__ == "__main__":
     S.rutasIniciales(0)
     print(S)
 
+    S2 = copy.deepcopy(S)
+    print(id(S.rutas[1].dictA))
+    print(id(S2.rutas[0].dictA))
     arista_ini = S.rutas[0].buscarArista((5,10))
 
 
@@ -2347,27 +2352,27 @@ if __name__ == "__main__":
     arista_ini = S.rutas[0].buscarArista((24,29)) #Opcion 3 distinta ruta
     #arista_ini = S.rutas[0].buscarArista((15,26)) #Opcion 4 distinta ruta
     #arista_ini = S.rutas[0].buscarArista((5,27)) #Opcion 1 distinta ruta
-    print(arista_ini)
-    indR, indA = S.getPosiciones(arista_ini.getOrigen(),arista_ini.getDestino())
-    nuevoCosto, tipo_3opt, ADD_3opt, DROP_3opt, indDROP_3opt = S.evaluar_3opt(arista_ini,indR,indA)
-    print(f"ruta {indR[0]}\n V:{S.rutas[indR[0]].getV()} \n A:{S.rutas[indR[0]].getA()} ")
-    print(S.rutas[indR[0]].getCapacidadPorCliente())
-    print(f"ruta {indR[1]}\n V:{S.rutas[indR[1]].getV()} \n A:{S.rutas[indR[1]].getA()} ")
-    print(S.rutas[indR[1]].getCapacidadPorCliente())
-    indR, indA = S.getPosiciones(arista_ini.getOrigen(),arista_ini.getDestino())
-    print("costoEvaluado: ", nuevoCosto)
-    print("indR: ", indR)
-    print("indA: ", indA)
-    print("ADD: ", ADD_3opt)
-    print("DROP: ", DROP_3opt)
-    print("Opcion: ", tipo_3opt)
+    # print(arista_ini)
+    # indR, indA = S.getPosiciones(arista_ini.getOrigen(),arista_ini.getDestino())
+    # nuevoCosto, tipo_3opt, ADD_3opt, DROP_3opt, indDROP_3opt = S.evaluar_3opt(arista_ini,indR,indA)
+    # print(f"ruta {indR[0]}\n V:{S.rutas[indR[0]].getV()} \n A:{S.rutas[indR[0]].getA()} ")
+    # print(S.rutas[indR[0]].getCapacidadPorCliente())
+    # print(f"ruta {indR[1]}\n V:{S.rutas[indR[1]].getV()} \n A:{S.rutas[indR[1]].getA()} ")
+    # print(S.rutas[indR[1]].getCapacidadPorCliente())
+    # indR, indA = S.getPosiciones(arista_ini.getOrigen(),arista_ini.getDestino())
+    # print("costoEvaluado: ", nuevoCosto)
+    # print("indR: ", indR)
+    # print("indA: ", indA)
+    # print("ADD: ", ADD_3opt)
+    # print("DROP: ", DROP_3opt)
+    # print("Opcion: ", tipo_3opt)
 
-    S.swap_3optv2(ADD_3opt,DROP_3opt,indR,indA,tipo_3opt)
+    # S.swap_3optv2(ADD_3opt,DROP_3opt,indR,indA,tipo_3opt)
     
-    print(f"ruta {indR[0]} después de swap \nV:{S.rutas[indR[0]].getV()} \n A:{S.rutas[indR[0]].getA()} ")
-    print(S.rutas[indR[0]].getCapacidadPorCliente())
-    print(f"ruta {indR[1]} después de swap \nV:{S.rutas[indR[1]].getV()} \n A:{S.rutas[indR[1]].getA()} ")
-    print(S.rutas[indR[1]].getCapacidadPorCliente())
+    # print(f"ruta {indR[0]} después de swap \nV:{S.rutas[indR[0]].getV()} \n A:{S.rutas[indR[0]].getA()} ")
+    # print(S.rutas[indR[0]].getCapacidadPorCliente())
+    # print(f"ruta {indR[1]} después de swap \nV:{S.rutas[indR[1]].getV()} \n A:{S.rutas[indR[1]].getA()} ")
+    # print(S.rutas[indR[1]].getCapacidadPorCliente())
 
     # print("´´´´´´´´´´´´´´´")
     # r2 = copy.copy(S.rutas[0])

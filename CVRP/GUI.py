@@ -122,14 +122,15 @@ class Ventana(tk.Tk):
         self.__spinboxCantidadResolver[i].place(relx=0.5, rely=0.60)
 
     def cargarDatos(self):
+        self.__myFolder = os.path.basename(self.__mypath)
         for i in range(0,len(self.__listaInstancias)):
             self.__nombreArchivo = self.__listaInstancias[i]
             print("Se resolverá "+ str(self.__cantidadResolver[i].get())+" veces "+ self.__nombreArchivo)
             for j in range(0,self.__cantidadResolver[i].get()):
                 print("RESOLVIENDO ------------------> "+str(self.__nombreArchivo))
                 self.__cvrp = CVRP(self.__matrizDistancias[i], self.__demanda[i], self.__nroVehiculos[i], self.__capacidad[i],
-                        self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.getSolucionInicial(self.__eSolInicial[i].get()),
-                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i],self.coordenadas)
+                        self.__nombreArchivo+"_"+str(self.__eTime[i].get())+"min", self.__myFolder, self.getSolucionInicial(self.__eSolInicial[i].get()),
+                        self.__boxADD[i].get(), self.__boxDROP[i].get(), self.__eTime[i].get(), self.__ePorcentaje[i].get(), self.__optimo[i])
                 j
 
     def getSolucionInicial(self,value):
@@ -144,9 +145,12 @@ class Ventana(tk.Tk):
         self.__labelRecomienda.append(tk.Label(text = "Se recomienda los siguientes valores..."))
         self.__labelRecomienda[i].place(relx=0.3,rely=0.05)        
         
-        tenureADD = int(len(self.__matrizDistancias[i])**(1/2.0))
-        tenureDROP = int(len(self.__matrizDistancias[i])**(1/2.0))+1
+        # tenureADD = int(len(self.__matrizDistancias[i])**(1/2.0))
+        # tenureDROP = int(len(self.__matrizDistancias[i])**(1/2.0))+1
 
+        tenureADD = int(len(self.__matrizDistancias[i])*0.1)
+        tenureDROP = int(len(self.__matrizDistancias[i])*0.1)+1
+        
         self.__combo1[i].configure(state = "readonly")
         self.__combo1[i].set('Clark & Wright')
         
@@ -160,22 +164,21 @@ class Ventana(tk.Tk):
         #Tiempo
         self.__label_RecomiendacTiempo.append(tk.Label(text = "Se recomienda como minimo"))
         self.__label_RecomiendacTiempo[i].place(relx=0.30, rely=0.33)
-        if(len(self.__matrizDistancias) < 50):
+        
+        if(int(len(self.__matrizDistancias[i])) < 80):
             self.__eTime[i].set(1.0)
-        elif(len(self.__matrizDistancias) < 100):
+        elif(int(len(self.__matrizDistancias[i])) < 150):
             self.__eTime[i].set(3.0)
-        elif(len(self.__matrizDistancias) <= 200):
-            self.__eTime[i].set(6.0)
         else:
-            self.__eTime[i].set(10.0)
+            self.__eTime[i].set(7.0)
 
         self.__entryTiempoEjecucion[i].configure(state = "normal", textvariable = self.__eTime[i])
 
         #Porcentaje
         self.__entryPorcentaje[i].configure(state = "normal", textvariable = self.__ePorcentaje[i])
-        self.__ePorcentaje[i].set(1.0)
+        self.__ePorcentaje[i].set(0.1)
 
-        return 
+        return
 
     def listToString(self, s): 
         str1 = ""  
@@ -211,9 +214,9 @@ class Ventana(tk.Tk):
         self.__listaInstancias = list(self.__listaInstancias)
         self.__mypath = ntpath.split(self.__listaInstancias[0])[0]
         self.__listaInstancias = [ntpath.split(f)[1] for f in self.__listaInstancias]
-        self.tabs(self.__listaInstancias)    
+        self.tabs(self.__listaInstancias)
         self.__nombreArchivo = os.path.splitext(os.path.basename(self.__listaInstancias[0]))[0]
-    
+        
     #Obtengo los datos de mis archivos .vrp
     def cargarDesdeFile(self,pathArchivo):
         #+-+-+-+-+-Para cargar la distancias+-+-+-+-+-+-+-+-
@@ -225,8 +228,13 @@ class Ventana(tk.Tk):
             indSeccionCoord = lineas.index("NODE_COORD_SECTION \n")
             lineaEOF = lineas.index("DEMAND_SECTION \n")
         except ValueError:
-            indSeccionCoord = lineas.index("NODE_COORD_SECTION\n")
-            lineaEOF = lineas.index("DEMAND_SECTION\n")
+            try:
+                indSeccionCoord = lineas.index("NODE_COORD_SECTION\n")
+                lineaEOF = lineas.index("DEMAND_SECTION\n")
+            except ValueError:
+                indSeccionCoord = lineas.index("NODE_COORD_SECTION\t\n")
+                lineaEOF = lineas.index("DEMAND_SECTION\t\n")
+                
         #Linea optimo y nro de vehiculos
         lineaOptimo = [x for x in lineas[0:indSeccionCoord] if re.search(r"COMMENT+",x)][0]
         parametros = re.findall(r"[0-9]+",lineaOptimo)
@@ -247,11 +255,12 @@ class Ventana(tk.Tk):
         for i in range(indSeccionCoord+1, lineaEOF):
             textoLinea = lineas[i]
             textoLinea = re.sub("\n", "", textoLinea) #Elimina los saltos de línea
-            splitLinea = textoLinea.split(" ") #Divide la línea por " " 
+            splitLinea = textoLinea.split() #Divide la línea por " " 
             if(splitLinea[0]==""):
                 coordenadas.append([splitLinea[1],splitLinea[2],splitLinea[3]]) #[[v1,x1,y1], [v2,x2,y2], ...]
             else:
                 coordenadas.append([splitLinea[0],splitLinea[1],splitLinea[2]]) #[[v1,x1,y1], [v2,x2,y2], ...]
+        #print("coordenadas: "+str(coordenadas))
         self.cargaMatrizDistancias(coordenadas)
         
         #+-+-+-+-+-+-+-Para cargar la demanda+-+-+-+-+-+-+-
@@ -265,22 +274,20 @@ class Ventana(tk.Tk):
         for i in range(indSeccionDemanda+1, indLineaEOF):
             textoLinea = lineas[i]
             textoLinea = re.sub("\n", "", textoLinea) #Elimina los saltos de línea
-            splitLinea = textoLinea.split(" ") #Divide la línea por " " 
-            demanda.append(float(splitLinea[1]))
-
+            splitLinea = textoLinea.split() #Divide la línea por " " 
+            try:
+                demanda.append(float(splitLinea[1]))
+            except:
+                splitLinea = textoLinea.split()
+                demanda.append(float(splitLinea[1]))
+        #print(str(demanda))
         self.__demanda.append(demanda)
     
     def cargaMatrizDistancias(self, coordenadas):
         matriz = []
         #Arma la matriz de distancias. Calculo la distancia euclidea
-        coordNuevo = []
         for coordRow in coordenadas:
             fila = []         
-            coord = []
-            coord.append(int(coordRow[0]))
-            coord.append(float(coordRow[1]))
-            coord.append(float(coordRow[2]))
-            coordNuevo.append(coord)
             for coordCol in coordenadas:
                 x1 = float(coordRow[1])
                 y1 = float(coordRow[2])
@@ -290,11 +297,11 @@ class Ventana(tk.Tk):
                 
                 #Para el primer caso. Calculando la distancia euclidea entre si mismo da 0
                 if(dist == 0 and float(coordRow[0])==float(coordCol[0])):
-                    dist = float("inf")
+                    dist = 999999999999
                 fila.append(dist)
+
             #print("Fila: "+str(fila))    
             matriz.append(fila)
-        self.coordenadas=coordNuevo
         self.__matrizDistancias.append(np.array(matriz))
 
     def distancia(self, x1,y1,x2,y2):
