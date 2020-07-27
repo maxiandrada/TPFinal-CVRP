@@ -37,6 +37,7 @@ class CVRP:
         t = time()
         self.__S.rutasIniciales(self.__tipoSolucionIni)
         print("Rutas iniciales: ",time()-t)
+        print(self.__S)
         self.tabuSearch()
         #self.Grafico = Grafico(coord,rutas)
 
@@ -109,25 +110,10 @@ class CVRP:
         cond_Optimiz = True
         cond_Estancamiento = False
 
-        # for EP in self._G.getA():
-        #     if(EP.getOrigen().getValue() < EP.getDestino().getValue() and EP.getPeso() <= umbral):
-        #         Aristas_Opt = np.append(Aristas_Opt, EP)
-        #         ind_permitidos = np.append(ind_permitidos, EP.getId())
-        # Aristas = Aristas_Opt
 
-#        Aristas_Opt = np.array([], dtype = object)
-        
         N = self._G.getGrado()
-
-
-
         Aristas_Opt = []
         ind_permitidos = []
-        # for EP in self._G.getA():
-        #     if(EP.getOrigen().getValue() < EP.getDestino().getValue() and EP.getPeso() <= umbral):
-        #         Aristas_Opt.append(EP)
-        #         ind_permitidos.append(EP.getId())
-        # Aristas = Aristas_Opt
 
         for i in range(1,N):
             j = i+1
@@ -246,14 +232,14 @@ class CVRP:
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
                 umbral = self.calculaUmbral(costo)
-                solucion_refer = nueva_solucion
+                solucion_refer = copy.deepcopy(nueva_solucion)
                 cond_Optimiz = True
                 Aristas = Aristas_Opt
                 iteracEstancamiento = 1
                 indOptimosLocales -= 1
                 iteracEstancMax = 100
                 self.__beta = 3
-            elif(iteracEstancamiento > iteracEstancMax and costoSolucion*porc_Estancamiento > nuevo_costo and nuevo_costo < costoSolucion*porc_EstancamientoMax):
+            elif(iteracEstancamiento > iteracEstancMax and costoSolucion*porc_Estancamiento > nuevo_costo):
                 nueva_solucion.swap(k_Opt, aristasADD[0], indRutas, indAristas)
                 tiempoTotal = time()-tiempoEstancamiento
                 costo = nueva_solucion.getCostoTotal()
@@ -262,14 +248,14 @@ class CVRP:
                 lista_tabu = []
                 ind_permitidos = ind_AristasOpt
                 umbral = self.calculaUmbral(costo)
-                solucion_refer = nueva_solucion
+                solucion_refer = copy.deepcopy(nueva_solucion)
                 cond_Optimiz = True
                 iteracEstancamiento = 1
                 Aristas = Aristas_Opt
                 iteracEstancMax = 300
             elif(iteracEstancamiento > iteracEstancMax):
                 nueva_solucion.swap(k_Opt, aristasADD[0], indRutas, indAristas)        
-                solucion_refer = nueva_solucion
+                solucion_refer = copy.deepcopy(nueva_solucion)
                 cond_Optimiz = True
                 self.__beta = 3
                 lista_tabu = []
@@ -348,4 +334,3 @@ class CVRP:
                 lista_tabu.pop(i)
                 i-=1
             i+=1
-    

@@ -43,6 +43,11 @@ class Ruta(Grafo):
     def getCapacidadMax(self):
         return self.capacidadMax
 
+
+    def mostrarDictAristasRuta(self):
+        for i in self.dictAristasRuta.keys():
+            print(f"{i}: {self.dictAristasRuta.get(i)}")
+
     #Retorna la arista que se está buscando, si se encuentra retorna la arista y si no retorna None
     #Se le puede pasar directamente la arista, o una tupla 
     def buscarAristaEnRuta(self,a):
