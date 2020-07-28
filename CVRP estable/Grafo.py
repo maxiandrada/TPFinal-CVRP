@@ -52,8 +52,6 @@ class Grafo:
         for v in A:
             V.append(v.getOrigen())
         self._V = V
-    def setAristas(self, A):
-        self._A = A
     def setV(self, V):
         self._V = V
     def getA(self):

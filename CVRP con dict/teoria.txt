@@ -1,0 +1,115 @@
+-El grafo dispero contiene a aquellas aristas cuya distancia no supere el umbral
+A partir de esas aristas elegimos una para hacer nuestro swap
+
+Umbral de granularidad: phi = Beta*(c/(n+k))
+#Beta = 1
+#c = valor de una sol. inicial
+#k = nro de vehiculos
+#n = nro de clientes
+
+Cuando la mejor solución encontrada hasta el momento no mejora después de
+n iteraciones, se aumenta el valor del factor de diversificación hasta Beta_x, en
+consecuencia se actualiza el grafo disperso. Generalmente n = 2nroC con nroC = nro Clientes
+
+Un movimiento se considera tabú si intenta reinsertar un arco que se ha
+eliminado en los movimientos previos. La permanencia tabú t para cada
+movimiento es un número entero aleatorio y uniformemente distribuido en el
+intervalo [tmin, tmax]. Esto signifia que se almacena solo los arcos que se han
+eliminado en la iteracion i
+
+Movimientos k-opt
+En particular, dada una solución actual S, un entorno basado en k-Intercambios
+se construye con todos los movimientos obtenidos eliminando un número k de
+arcos usados en S y reemplazándolos por otros k arcos, de forma que se
+consigue una nueva solución.
+
+Se elige un arco del grafo disperso, y luego implicitamente queda determinado
+otro arco para realizar el movimiento. Si se encontro una solucion nueva y en n
+iteraciones se actualiza el grafo disperso añadiendo los arcos insertados en la
+iteración anterior (que corresponden a la mejor solucion)
+
+Solucion:
+1-2-3-4-5  1-6-7-8-9-10    1-11-12-13-14-15
+
+2-opt: (se eliminan 2 arcos y se insertan 2 mas)
+
+.(3,6)
+1-2-3-6-7-8-9-10   1-4-5   1-11-12-13-14-15
+(Se modifican 2 aristas)
+=>  DROP                ADD
+    (3,4) que ahora es (3,6)
+    (1,6) que ahora es (1,4)
+
+.(2,4)
+1-2-4-3-5    1-6-7-8-9-10    1-11-12-13-14-15   => (2,3) que ahora es (2,4)
+                                                => (3,4) que ahora es (3,5)
+
+.(6,9)
+1-2-3-4-5    1-6-9-8-7-10       ADD = [(6,9),()]
+
+3-opt: (se eliminan 3 arcos y se se insertan 3)
+Antes:  v2-v4-v6
+1-2-3-4-5-6-1    -->     1-6-3-2-5-4-1
+=>  (1,2) que ahora es (1,6)
+    *(2,3) aun siguen conectados por (3,2)
+    (3,4) que ahora es (3,2)
+    *(4,5) aun siguen conectados por (5,4)
+    (5,6) que ahora es (5,4)
+    *(6,1) aun siguen conectados por (1,6) 
+
+Ahora: (a,b)
+Sol: 1-2-a-3-4   1-5-b-6-7-8
+
+1ra opcion:    1-2-3-4         1-5-a-b-6-7-8
+=>   DROP                ADD
+    (2,a) que ahora es (2,3)
+    (a,3) que ahora es (a,b)
+    (5,b) que ahora es (5,a)
+
+2da opcion:    1-2-a-b-6-3-4  1-5-7-8
+=>  (a,3) que ahora es (6,3) y (a,b)
+    (5,b) y (6,7) que ahora es (5,7)
+    
+3ra opcion:    1-2-a-b-3-4      1-5-6-7-8
+=>  (a,3) -> (b,3)
+    (5,b) y (b,6) -> (5,6) y (a,b)
+
+4ta opcion:    1-2-a-b-6-7-3-4  1-5-8
+=>  (a,3) que ahora es (7,3) y (a,b)
+    (5,b) y (7,8) que ahora es (5,8)
+
+5ta opcion:    1-2-a-3-4-b-5-6-7
+(a,b)          1-2-a-b-3-4-5-6-7
+=>  ADD     DROP
+    (a,b)   (4,b)
+    (4,5)   (5,b)
+    (b,3)   (a,3)
+.
+.
+.
+Dato de color: en una iteracion se podria evaluar todas(o casi todas) estas posibilidades q correspondan a las rutas
+involucradas en este movimiento. Si se aplica en la misma ruta y hay una sola arista intermedia, se aplica 2-opt
+
+(7,15)
+Sol: 1-2-3-4-5      1-6-7-8-9-10        1-11-12-13-14-15
+
+1ra opcion:    1-2-3-4-5    1-6-8-9-10      1-11-12-13-14-7-15
+=>  (6,7) -> (6,8)
+    (7,8) -> (7,15)
+    (14,15) -> (14,7)
+
+
+4-opt: (se eliminan 4  y entran 4)
+
+Sol: 1-2-3-4-5      1-6-7-8-9-10        1-11-12-13-14-15
+
+(3,7)
+1-2-3-7-5       1-6-4-8-9-10    1-11-12-13-14-15
+
+=>  ADD     DROP
+    (3,7)   (3,4)
+    (7,5)   (4,5)
+    (6,4)   (6,7)
+    (4,8)   (7,8)
+
+*se intercambian unicamente los vertces 4 y 7*
