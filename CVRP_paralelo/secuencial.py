@@ -158,10 +158,8 @@ def cargarDesdeFile2(pathArchivo):
                 demandas.append(float(splitLinea[1]))
         return nroVehiculos, optimo, capacidad, matrizDist, demandas     
 
-direccion = "/home/alumno/tpfinal_v2/MPIv2/cvrp/Instancias/Set M/M-n200-k16.vrp"
-# direccion = "/home/alumno/tpfinal_v2/MPIv2/cvrp/Instancias/Set X/X-n214-k11.vrp"
-# direccion = "/home/alumno/tpfinal_v2/MPIv2/cvrp/Instancias/X-n548-k50.vrp"
-# direccion = "/home/alumno/tpfinal_v2/MPIv2/cvrp/Instancias/Set M/M-n101-k10.vrp"
+direccion = "/home/alumno/tpfinal_v2/MPIv3/cvrp/Instancias/Set M/M-n200-k16.vrp"
+
 nombre = "M-n200-k16.vrp"
 
 nroVehiculos, optimo, capacidad, matrizDist, demandas = cargarDesdeFile2(direccion)

@@ -178,77 +178,24 @@ class CVRPparalelo:
 
         while(tiempoEjecuc < tiempoMax and porcentaje*100 > self.__porcentajeParada):
             if(cond_Optimiz):
-                if (not time () - tCoord > self.__tiempoMPI):
+                if (not time () - tCoord > self.__tiempoMPI): #Condición para chequear si ya es tiempo de compartir datos antes de ejecutar self.getPermitidos
                     tiempo = time()
                     ind_permitidos, Aristas = self.getPermitidos(Aristas, lista_tabu, umbral, solucion_refer, rutas_refer)    #Lista de elementos que no son tabu
-                    print("tiempo getPerm: "+str(time()-tiempo))
+                    # print("tiempo getPerm: "+str(time()-tiempo))
                     self.__umbralMin = 0
                     condMPIopt = True
                 else:
-                    condMPIopt = False
+                    condMPIopt = False  # Con esta condición nos evitamos de realizaar todas las actividades que vienen despues de compartir los datos hasta realizaar el self.getPermitidos
 
-            if(not tiempoEjecuc < tiempoMax and bandera):
-                print ("LOS NODOS YA CUMPLIERON SU TIEMPO DE EJECUCIÓN. FORZANDO DETENCIÓN")
-                l = self.__comm.allgather(nroIntercambios)
-                # mayor = l[0]
-                # for i in range(1,len(l)):
-                #     if(l[i] < mayor):
-                #         mayor = l[i]
-                # cantIntercambios = mayor+1
-                cantIntercambios = max(l)+1
-                bandera = False 
+            # AÚN NO SE SI ESTO ES NECESARIO ( EVITAR QUE LOS NODOS SIGAN EJECUTANDO UNA VEZ TERMINADO EL tiempoMax)
+            # if(not tiempoEjecuc < tiempoMax and bandera): 
+            #     print ("LOS NODOS YA CUMPLIERON SU TIEMPO DE EJECUCIÓN. FORZANDO DETENCIÓN")
+            #     l = self.__comm.allgather(nroIntercambios)
+            #     cantIntercambios = max(l)+1
+            #     bandera = False 
+            tCoord, nroIntercambios = self.__paralelismo(time () - tCoord > self.__tiempoMPI, tCoord, nroIntercambios)
 
-            if(time () - tCoord > self.__tiempoMPI):
-                nroIntercambios +=1
-                print ("Intercambio %d con %f de diferencia de tiempo <<<<---------------------------------------------------------------- MPI <<<<---------------------------------"%(nroIntercambios, (time()-tCoord)-self.__tiempoMPI))
-                
-                delay = (time()-tCoord)-self.__tiempoMPI
-                listaS = self.__comm.allgather((self.__S, self.__rank, self.__rutas, delay)) #solucion_refer, Aristas, lista_tabu, nueva_solucion, ind_permitidos, ind_permitidos, self.__rutas, Aristas, lista_tabu, ind_permitidos, rutas_refer, self._G, nueva_solucion
-                if delay > 2:
-                    menor = listaS[0]
-                    for i in range(1,len(listaS)):
-                        if(listaS[i][3] < menor[3]):
-                            menor = listaS[i]
-                    tCoord += menor[3]
-                    print ("Se aumentó el tiempo de coordinación a %d"%(menor[3]))
-                smCosto = listaS[0]
-                for i in range(1,len(listaS)):
-                    if(listaS[i][0].getCostoAsociado() < smCosto[0].getCostoAsociado()):
-                        smCosto = listaS[i]
-                self.__S = copy.deepcopy(smCosto[0])
-                self.__rutas = copy.deepcopy(smCosto[2])
-                # Eliminamos repetidos
-                i = 0
-                while i < len(listaS):
-                    j=i+1
-                    while j < len(listaS):
-                        if listaS[i][0] == listaS[j][0]:
-                            listaS.pop(j)
-                            print ("Se quitó una solución repetida")
-                        else:
-                            j+=1
-                    i+=1
-                # Eliminamos optimos locales que ya existen en las soluciones
-                i = 0
-                while i < len(self.__poolSol):
-                    j = i
-                    while j < len(listaS):
-                        costo = abs(self.getCostoAsociadoRutas(self.__poolSol[i]) - self.getCostoAsociadoRutas(listaS[j][2]))
-                        if costo<0.00001:
-                            listaS.pop(j)
-                            print ("Se quitó una solución repetida con el mismo peso que un óptimo local")
-                        else:
-                            j+=1
-                    i+=1
-                for tupla in listaS:
-                    self.__poolSol.append(tupla[2])
-                self.__poolSol.append(copy.deepcopy(self.__rutas))
-                while len(self.__poolSol) >= 50:
-                    self.__poolSol.pop(0)
-                indOptimosLocales = -2
-                tCoord=time()
-
-            if condMPIopt:
+            if condMPIopt: # Condicion para no ejecutar el código de adentro hasta que se realice el self.getPermitidos
                 cond_Optimiz = False
                 ADD = []
                 DROP = []
@@ -268,7 +215,7 @@ class CVRPparalelo:
 
                 #Si encontramos una mejor solucion que la tomada como referencia
                 if(nuevo_costo < solucion_refer.getCostoAsociado() and aristasADD != []):
-                    cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac)
+                    cad = "\n+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- Iteracion %d nodo %d +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-\n" %(iterac,self.__rank)
                     self.__txt.escribir(cad)
 
                     nuevas_rutas = nueva_solucion.swap(k_Opt, aristasADD[0], rutas_refer, indRutas, indAristas)
@@ -450,6 +397,57 @@ class CVRPparalelo:
         for r in rutas:
             acu += r.getCostoAsociado()
         return acu
+
+    def __paralelismo(self, cond, tCoord, nroIntercambios):
+        if cond:
+            nroIntercambios +=1
+            print ("Intercambio %d con %f de diferencia de tiempo <<<<---------------------------------------------------------------- MPI <<<<---------------------------------"%(nroIntercambios, (time()-tCoord)-self.__tiempoMPI))
+            
+            delay = (time()-tCoord)-self.__tiempoMPI
+            listaS = self.__comm.allgather((self.__S, self.__rank, self.__rutas, delay)) #solucion_refer, Aristas, lista_tabu, nueva_solucion, ind_permitidos, ind_permitidos, self.__rutas, Aristas, lista_tabu, ind_permitidos, rutas_refer, self._G, nueva_solucion
+            if delay > 2:
+                menor = listaS[0]
+                for i in range(1,len(listaS)):
+                    if(listaS[i][3] < menor[3]):
+                        menor = listaS[i]
+                tCoord += menor[3]
+                print ("Se aumentó el tiempo de coordinación a %d"%(menor[3]))
+            smCosto = listaS[0]
+            for i in range(1,len(listaS)):
+                if(listaS[i][0].getCostoAsociado() < smCosto[0].getCostoAsociado()):
+                    smCosto = listaS[i]
+            self.__S = copy.deepcopy(smCosto[0])
+            self.__rutas = copy.deepcopy(smCosto[2])
+            # Eliminamos repetidos
+            i = 0
+            while i < len(listaS):
+                j=i+1
+                while j < len(listaS):
+                    if listaS[i][0] == listaS[j][0]:
+                        listaS.pop(j)
+                        print ("Se quitó una solución repetida")
+                    else:
+                        j+=1
+                i+=1
+            # Eliminamos optimos locales que ya existen en las soluciones
+            i = 0
+            while i < len(self.__poolSol):
+                j = i
+                while j < len(listaS):
+                    costo = abs(self.getCostoAsociadoRutas(self.__poolSol[i]) - self.getCostoAsociadoRutas(listaS[j][2]))
+                    if costo<0.00001:
+                        listaS.pop(j)
+                        print ("Se quitó una solución repetida con el mismo peso que un óptimo local")
+                    else:
+                        j+=1
+                i+=1
+            for tupla in listaS:
+                self.__poolSol.append(tupla[2])
+            self.__poolSol.append(copy.deepcopy(self.__rutas))
+            while len(self.__poolSol) >= 50:
+                self.__poolSol.pop(0)
+            tCoord=time()
+        return tCoord, nroIntercambios
 
     def getPermitidos(self, Aristas, lista_tabu, umbral, solucion, rutas_refer):
         AristasNuevas = []
