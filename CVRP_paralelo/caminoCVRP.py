@@ -61,11 +61,14 @@ class camino():
                         else:
                             indS = self.incIndS(indS)
                     self.__cond2 = self.igualesRec()
-                    if self.__chequeaFactibilidadRuta(self.__s[self.__indS[0]]) and self.__chequeaFactibilidadRuta(self.__s[indS[0]]):
+                    if indS!= None and self.__chequeaFactibilidadRuta(self.__s[self.__indS[0]]) and self.__chequeaFactibilidadRuta(self.__s[indS[0]]):
+                        print ("entro 1")
                         return self.__s
                     else:
+                        print ("entro 2")
                         return self.pathRelinking()
                 else:
+                    print ("entro 3")
                     self.__cond2 = self.igualesRec()
                     return self.__s
             elif not self.__cond1:
@@ -86,8 +89,10 @@ class camino():
                         i+=1
                 self.__cond1 = self.igualesTam()
                 if b2:
+                    print ("entro 4")
                     return self.__s
                 else:
+                    print ("entro 5")
                     return self.pathRelinking()
             else:
                 print ("Ya llegamos a la solución guía")
@@ -99,7 +104,8 @@ class camino():
     def __chequeaFactibilidadRuta(self, ruta):
         acu = 0.0
         for i in range(len(ruta)):
-            acu += self.__demandas[ruta[i]-1]
+            acu += self.__demandas[ruta[i]]
+        print ("acu:"+str(acu))
         return False if acu > self.__capacidad else True
 
     def incIndS(self, indS):
@@ -144,10 +150,10 @@ class camino():
 #### SECCION DE PRUEBAS ####
 s = [[1,4,5,2],[1,9,8],[1,3,6,7,10]]
 
-# [[1,2,5,4][1,9,8][1,3,6,7,10]] 2
+# [[1,2,5,4][1,9,8][1,3,6,7,10]] 2 - factible - carga=[4+6+5]
 # [[1,2,3,4][1,9,8][1,5,6,7,10]] 5
 # [[1,2,3,4][1,5,8][1,9,6,7,10]] 9
-# [[1,2,3,4][1,5,6][1,9,8,7,10]] 8 - factible - carga=[4+2+5]
+# [[1,2,3,4][1,5,6][1,9,8,7,10]] 8
 # [[1,2,3,4][1,5,6][1,7,8,9,10]] 9
 # [[1,2,3][1,4,5,6][1,7,8,9,10]]
 # [[1,2][1,3,4,5,6][1,7,8,9,10]]
