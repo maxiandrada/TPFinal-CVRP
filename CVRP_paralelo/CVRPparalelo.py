@@ -19,6 +19,7 @@ class CVRPparalelo:
         self.__tiempoMPI = 0
         self.__rank = self.__comm.Get_rank()
         self.__poolSol = []
+        self.__contSol = 0
         
         self._G = Grafo(M, D)                #Grafo original
         self.__S = Solucion(M, D, sum(D))    #Solucion general del CVRP
@@ -128,6 +129,7 @@ class CVRPparalelo:
     #iteracEstancamiento: iteraciones de estancamiento para admitir una solución peor, modificar Beta y escapar del estancamiento
     #iterac: cantidad de iteraciones actualmente
     def tabuSearch(self):
+        print (str(self.__Demandas))
         self.__comm.Barrier()
         lista_tabu = []
         ind_permitidos = np.array([], dtype = int)
@@ -254,7 +256,8 @@ class CVRPparalelo:
                         porcentaje = round(nuevo_costo/self.__optimo -1.0, 3)
                         tiempoTotal = time()-tiempoEstancamiento
                         print(cad)
-                        cad = "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))
+                        self.__contSol += 1
+                        cad = "\nLa solución anterior duró " + str(int(tiempoTotal/60))+"min "+ str(int(tiempoTotal%60))+" y ya van "+str(self.__contSol)+" soluciones encontradas"
                         cad += "seg    -------> Nuevo optimo local. Costo: "+str(nuevo_costo)
                         cad += "       ==> Optimo: "+str(self.__optimo)+"  Desvio: "+str(porcentaje*100)+"%"
                         
@@ -264,7 +267,6 @@ class CVRPparalelo:
                         #     print("DROP: "+str(aristasDROP))
                         #     print("ind_AristasOpt: "+str(ind_AristasOpt))
                         #     print("ind_permitidos: "+str(ind_permitidos))
-
                         self.__S = nueva_solucion
                         self.__rutas = nuevas_rutas
                         self.__beta = 1
@@ -404,7 +406,7 @@ class CVRPparalelo:
             print ("Intercambio %d con %f de diferencia de tiempo <<<<---------------------------------------------------------------- MPI <<<<---------------------------------"%(nroIntercambios, (time()-tCoord)-self.__tiempoMPI))
             
             delay = (time()-tCoord)-self.__tiempoMPI
-            listaS = self.__comm.allgather((self.__S, self.__rank, self.__rutas, delay)) #solucion_refer, Aristas, lista_tabu, nueva_solucion, ind_permitidos, ind_permitidos, self.__rutas, Aristas, lista_tabu, ind_permitidos, rutas_refer, self._G, nueva_solucion
+            listaS = self.__comm.allgather((self.__S, self.__rank, self.__rutas, delay, self.__contSol)) #solucion_refer, Aristas, lista_tabu, nueva_solucion, ind_permitidos, ind_permitidos, self.__rutas, Aristas, lista_tabu, ind_permitidos, rutas_refer, self._G, nueva_solucion
             if delay > 2:
                 menor = listaS[0]
                 for i in range(1,len(listaS)):
@@ -412,6 +414,11 @@ class CVRPparalelo:
                         menor = listaS[i]
                 tCoord += menor[3]
                 print ("Se aumentó el tiempo de coordinación a %d"%(menor[3]))
+            masSol = listaS[0]
+            for i in range(1,len(listaS)):
+                if(listaS[i][4] > masSol[4]):
+                    masSol = listaS[i]
+            print ("El nodo %d fue el que encontró mas soluciones: %d"%(masSol[1], masSol[4]))
             smCosto = listaS[0]
             for i in range(1,len(listaS)):
                 if(listaS[i][0].getCostoAsociado() < smCosto[0].getCostoAsociado()):
